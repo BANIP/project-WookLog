@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta content="width=device-width" name="viewport">
+	<title>hello, posting!</title><!--    <link href='https://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css' rel='stylesheet' type='text/css'> -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<meta content="telephone=no" name="format-detection">
+	<link href="css/main.css" rel="stylesheet">
+</head>
+<body>
+	<div id="wrap">
+		<header id="header">
+			<h1>욱로그<span class="text_prime">();</span></h1>
+		</header>
+		<div id="mainWrap">
+			<nav id="navWrap">
+				<header id="navHeader">
+				
+					<div class="flow" id="navHeaderDefault" >
+						<div class="innercenter wrap">
+							<div class="area_icon area_icon_pageselect">
+								<i class="fa fa-reorder icon_pageselect"></i>
+							</div>
+							<div class="text_title">
+								ROOT
+							</div>
+							<div class="area_icon area_icon_write right hide">
+								<i class="fa fa-pencil"></i>
+							</div>
+							<div class="area_icon area_icon_search right">
+								<i class="fa fa-search icon_search"></i>
+							</div>
+						</div>
+					</div>
+					<div class="flow hide innercenter" id="navHeaderSearch" >
+						<div class="innercenter wrap">
+							<div class="area_icon area_icon_spinner blind">
+								<i class="fa fa-spinner fa-spin icon_spinner"></i>
+							</div>
+							<div class="area_icon area_icon_search">
+								<i class="fa fa-search icon_search"></i>
+							</div>
+							<div class="area_search">
+								<input class="inp_search inp" type="text" placeholder="검색어를 입력해주세요!">
+							</div>
+							<div class="area_icon area_icon_close">
+							<i class="fa fa-times-circle-o icon_close"></i>
+						</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
+
+				</header>
+				<nav id="categoryWrap"  data-isopen=false>
+					<ul class="area_listing" id="categoryContent">
+				</ul>
+				</nav>
+					<article id="navContainer">
+						<ul class="area_listing" id="navContent"></ul>
+						<div class="wrap_alert hide">
+							<div class="area_alert innercenter ">
+										<div class="area_icon_normal">
+											<i class="fa fa-times-circle-o"></i>
+										</div>
+										<div class="area_text">
+											<span class="text_message"> 서버에 연결할 수 없습니다. </span>
+										</div>
+							</div>
+						</div>
+					</article>
+			</nav>
+
+			<article id="contentWrap">
+				<section id="contentContainer">
+					<header id="contentHeader">
+						<div class="area_main">
+							<span class="text_category">JAVA I/O</span>
+							<div class="text_title">
+								<h2 id="contentTitle">[JAVA] File 클래스 정리</h2>
+							</div>
+						</div>
+						<div class="area_hit">
+							<i class="fa fa-line-chart"></i> <span class="text_hit">0</span> <span class="inp_div"></span> <i class="fa fa-heart-o text_prime"></i> <span class="text_like">0</span>
+						</div>
+						<div class="area_date">
+							<p>작성 <span class="text_date_created">0</span></p>
+							<p>수정 <span class="text_date_modified">0</span></p>
+						</div>
+					</header>
+					<hr>
+					<div id="contentBody">
+						java.io 패키지는 기존의 파일이나 폴더에 대한 제어를 하는데 사용하는 파일 클래스를 제공한다. 파일을 나타내는 객체를 생성하려면 다음과 같은 file 클래스의 생성자 함수를
+					</div>
+					<hr>
+				</section>
+				<section id="commentWrap">
+					<header id="CommentHeader">
+						댓글[1]
+					</header>
+					<div id="commentContainer">
+						<div id="commentForm">
+							<input class="inp_name inp" placeholder="이름" type="text"> 
+							<input class="inp_password inp" placeholder="비밀번호" type="password"> 
+							<input class="inp_descript inp" placeholder="내용" type="text"> 
+							<button>입력</button>
+						</div>
+						<ul class="area_listing" id="commentContent"></ul>
+					</div>
+				</section>
+			</article>
+		</div>
+	</div>
+	<div id="fadeIn" class="hide">
+	</div>
+	<div id="boardWriteWrap" class="hide">
+		<form id="boardWriteContainer">	
+		    <header class="area_input area_title">
+		          <div class="area_close area_icon">  <i class="fa fa-times"></i> </div>
+		        <input type="text" class="inp_title" placeholder="제목" name="board_title"/>
+		    </header>
+		    <article class="area_input area_descript">
+		       <textarea class="inp_descript" name="board_content" placeholder="내용">              </textarea>
+		    </article>
+		    <footer class="area_footer">
+		        <div class="area_category">
+		          <select class="board_category"></select>
+		        </div>
+		        <div class="area_boardwrite">
+		          <button class="btn_boardwrite"> 작성 </button>
+		        </div>
+		    </footer>
+		</form>
+	</div>
+	<div id="alertWrap" class="hide">
+		<div id="alertContainer" class="innercenter">
+			<div class="area_icon_normal">
+				<i class="fa fa-times-circle-o"></i>
+			</div>
+			<div class="area_text">
+				<span class="text_message"> 서버에 연결할 수 없습니다. </span>
+			</div>
+		</div>
+	</div>
+	<div class="blind">
+		<ul id="blindList">
+			<li class="item_board cloneable">
+				<div class="item_wrap">
+					<div class="item_inner_top">
+						<span class="text_title"></span>
+					</div>
+					<div class="item_inner_bottom">
+						<div class="item_inner_right right">
+							<div class="area_hit">
+								<i class="fa fa-line-chart"></i> <span class="text_hit">0</span> <span class="inp_div"></span> <i class="fa fa-heart-o text_prime"></i> <span class="text_like">0</span>
+							</div>
+						</div>
+						<div class="item_inner_left">
+							<div class="area_date">
+								<span class="text_date"></span>
+							</div>
+						</div>
+					</div>
+						<hr>
+				</div>
+			</li>
+			<li class="item_comment cloneable">
+				<div class="item_wrap">
+					<div class="item_inner_top">
+						<p class="item_descript"></p>
+					</div>
+					<div class="item_inner_bottom">
+						<div class="item_inner_left">
+							<p class="item_wrap"><span class="item_name"></span></p>
+						</div>
+						<div class="item_inner_right">
+							<p class="item_wrap"><span class="item_date"></span> <span class="inp_div"></span> <span class="item_ip"></span></p>
+						</div>
+					</div>
+				</div>
+			</li>
+			<li class="item_category cloneable">
+				<div class="inner_depth"></div>
+				<div class="inner_boardcount">
+					<div class="area_icon">
+						<i class="fa fa-pencil"></i>
+					</div>
+					<div class="area_text">
+						<span class="text_boardcount">10 </span>
+					</div>
+					
+				</div>
+				<div class="area_text area_title">
+					<span class="text_title"> ROOT</span>
+				</div>
+				<div class="inner_info">
+					<div class="area_viewcount">
+						<span class="text_hit"> <i class="fa fa-line-chart"></i> <span class="text_hitcount">10</span> </span> <span class="inp_div"></span>
+						<span class="text_like"> <i class="fa fa-heart-o text_prime"></i> <span class="text_likecount">10</span> </span>
+					</div>
+					<div class="area_date">
+						<span class="text_lastupdate"> 2017-07-05 </span>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<script src="js/jquery.min.js"></script> 
+	<script src="js/main.js"></script> 
+</body>
+</html>
