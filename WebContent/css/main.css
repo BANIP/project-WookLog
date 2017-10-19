@@ -35,7 +35,7 @@ button{
 	border:none;
 }
 
-input:focus{
+input:focus, textarea:focus{
 	outline:none;
 }
 .inp{
@@ -483,8 +483,9 @@ hr{
   position:absolute;
   right:15px;
   top:8px;
-  width:10px;
-  height:10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 
 #boardWriteWrap .area_title{
@@ -526,7 +527,14 @@ hr{
   border-radius:0 0 10px 10px;
   display:flex
 }
-
+#boardWriteWrap .board_category{
+	border-color: var(--color-prime);
+    background: none;
+    color: white;
+}
+#boardWriteWrap .board_category option{
+	color:black;
+}
 #boardWriteWrap .area_boardwrite{
   margin-left:auto;
 }

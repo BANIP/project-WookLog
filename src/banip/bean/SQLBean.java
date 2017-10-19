@@ -72,13 +72,14 @@ public abstract class SQLBean {
 		return json;
 	}
 	
+	@SuppressWarnings("deprecation")
 	private Object getFieldValue(String fieldName) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		// TODO Auto-generated method stub
 		Field field = this.getClass().getDeclaredField(fieldName);
 		String fieldType = field.getType().getName();
 		switch(fieldType) {
-			case "java.sql.Date" :
-					return ( (Date) field.get(this) ).toLocaleString();
+			case "java.sql.Timestamp" :
+					return ( (Timestamp) field.get(this) ).toLocaleString();
 			default:
 					return field.get(this);
 		}
@@ -89,6 +90,7 @@ public abstract class SQLBean {
 		return getJSON( new ArrayList<String>().iterator() );
 	}
 
+	@SuppressWarnings("deprecation")
 	protected String toLocalString(Timestamp date) {
 		// TODO Auto-generated method stub
 		return date == null ? null : date.toLocaleString();

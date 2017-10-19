@@ -80,7 +80,7 @@ public class BoardQuery extends SQLQuery{
 	 *   <li>INSERT BOARD_HISTORY(HISTORY_TITLE, HISTORY_CONTENT)</li>
 	 *   <li>INSERT BOARD_MAIN(BOARD_CATEGORY_ID, BOARD_USER_ID, BOARD_HISTORY_ID)</li>
 	 * </ul>
-	 * @쿼리결과값 int 5
+	 * @쿼리결과값 int 추가된 게시글의 기본키
 	 * @메커니즘<ol>
 	 * 	<li> BOARD_HISTORY에 새로운 글 내용을 작성 </li>
 	 * 	<li> BOARD_MAIN에 history를 참조하는 튜플 작성 </li>
@@ -99,8 +99,8 @@ public class BoardQuery extends SQLQuery{
 		+ "SET @ID_HISTORY = LAST_INSERT_ID();"
 		+ String.format("INSERT INTO BOARD_MAIN(BOARD_CATEGORY_ID, BOARD_USER_ID, BOARD_HISTORY_ID) VALUES(%d,%d,@ID_HISTORY);",boardCategoryID,boardUserID)
 		+ "SET @ID_BOARD = LAST_INSERT_ID();"
-		+ "UPDATE BOARD_HISTORY SET HISTORY_BOARD_ID = @ID_BOARD WHERE HISTORY_BOARD_ID = @ID_BOARD;";
-		
+		+ "UPDATE BOARD_HISTORY SET HISTORY_BOARD_ID = @ID_BOARD WHERE HISTORY_BOARD_ID = @ID_BOARD;"
+		+ "SELECT  @ID_BOARD;";
 		return query;
 	}
 	

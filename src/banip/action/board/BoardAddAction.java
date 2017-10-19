@@ -90,15 +90,17 @@ public class BoardAddAction extends ActionBoard{
 
 		BoardDao dao = new BoardDao();
 		String userName = super.getString(request, "user_name");
-		boolean isAddSucess = dao.addBoard(getBean(request), userName);
+		int boardID = dao.addBoard(getBean(request), userName);
 		dao.close(true);
-		return getResultJSON(isAddSucess);
+		return getResultJSON(boardID);
 	}
 	
-	private BoardJSON getResultJSON(boolean isAddSucess) {
+	private BoardJSON getResultJSON(int boardID) {
 		// TODO Auto-generated method stub
-		if(isAddSucess) {
-			return new BoardJSON(StatusCode.STATUS_SUCCESS);
+		if(boardID != -1) {
+			BoardJSON json = new BoardJSON(StatusCode.STATUS_SUCCESS);
+			json.putData("board_id", boardID);
+			return json;
 		} else {
 			return new BoardJSON(StatusCode.STATUS_SERVER,"서버상의 오류로 글 작성에 실패했습니다!");
 		}

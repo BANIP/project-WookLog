@@ -132,24 +132,24 @@ public class BoardDao extends SQLDao{
 	 * </ul>
 	 * @param bean 게시글의 빈 객체
 	 * @param boardUserID 등록할 유저의 ID키
-	 * @return 게시글이 등록되었는지 아닌지의 여부
+	 * @return 등록된 게시글의 기본키, 등록실패시 -1
 	 */
-	public boolean addBoard(BoardBean bean,int userID){
+	public int addBoard(BoardBean bean,int userID){
 		BoardQuery queryList = (BoardQuery) bean.getQuery();
 		String query = queryList.getAddBoardQuery(userID);
 		try{
 			pstmt = conn.prepareStatement(query);
-			int result = pstmt.executeUpdate();
-			if(result != 5) return false;
-			return true;
+			rs = pstmt.executeQuery();
+			return rs.getInt(1);
 		} catch(SQLException ee){
 			printException(ee, query);
 		} finally{
 			close(false);
 		}
-		return false;
+		return -1;
 	}
-	public boolean addBoard(BoardBean bean,String userName){
+	
+	public int addBoard(BoardBean bean,String userName){
 		UserDao userdao = new UserDao();
 		int userID = userdao.getUserID(userName);
 		userdao.close(true);

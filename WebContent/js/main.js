@@ -171,7 +171,7 @@ var BoardData = (function(){
 				boardContent : function(boardID){
 					var requestSuccess = function(json){
 							BoardData.board = json.data;
-							BoardContent.reload.content( json.data );
+							BoardContentDOM.reload.content( json.data );
 					};
 					var param = {
 							type : "GET",
@@ -295,9 +295,13 @@ var BoardListDOM = (function(){
 				$obj :  $("#navHeaderDefault .area_icon_write"),
 				events : {
 					click : function(event){
-						let writedom = BoardContent.boardWrite;
+						let writedom = BoardContentDOM.boardWriteDatas;
 						writedom.wrap.show();
-						if( !writedom.categorySelect.isInit ) writedom.categorySelect.init(BoardData.category);
+						if( !writedom.categorySelect.isInit ){
+							writedom.categorySelect.init(BoardData.category);
+							writedom.categoryOption.domreset();
+						}
+						
 					},
 					load : function(event){
 						$this = headerDatas.mainIconWrite.$obj;
@@ -401,7 +405,7 @@ var BoardListDOM = (function(){
 	return rtn;
 })();
 
-var BoardContent = (function(){
+var BoardContentDOM = (function(){
 	var boardDatas = {
 		wrap : {
 			$obj : $("#contentContainer"),
@@ -418,47 +422,130 @@ var BoardContent = (function(){
 		}
 	}
 	
-	var boardWrite = {
+	var boardWriteDatas = {
 			wrap : {
 				$obj : $("#boardWriteWrap"),
 				show : function(){
 					this.$obj.slideDown();
+				},
+				hide : function(){
+					this.$obj.slideUp();
+				},
+				reset : function(){
+					let dom = boardWriteDatas;
+					dom.title.reset();
+					dom.content.reset();
+				},
+				getDatas : function(){
+					var user =  userManage.getUser();
+					var dom = boardWriteDatas;
+					return {
+						board_title : dom.title.$obj.val() ,
+						board_content: dom.content.$obj.val() ,
+						category_id: dom.categoryOption.$obj.filter(":selected").data("id"),
+						user_pwd: user.pwd,
+						user_name: user.name,
+					};
+				},
+			},
+			title : {
+				$obj : $("#boardWriteWrap .inp_title"),
+				reset : function(){
+					this.$obj.text();
+				}
+			},
+			close : {
+				$obj : $("#boardWriteWrap .area_close"),
+				events : {
+					click :function(){
+						boardWriteDatas.wrap.hide();
+					}
+				}
+			
+			},
+			content : {
+				$obj : $("#boardWriteWrap .inp_descript"),
+				reset : function(){
+					this.$obj.text();
 				}
 			},
 			categorySelect : {
 				$obj : $("#boardWriteWrap .board_category"),
 				isInit : false,
 				init : function(category){
-					console.log(category)
 					this.isInit = true;
-					let $obj = this.$obj;
-					let $option = boardWrite.categoryOption.get();
-					$option.data("id", category.info.category_id);
-					$option.text(category.info.category_name);
-					$obj.append($option);
+					const dom = boardWriteDatas;
+					const $option = dom.categoryOption.get(category.info);
 					
+					this.addOption( $option );
+					
+					// 자식요소 재귀로 추가
 					if( category.child && category.child.length != 0 ){
 						category.child.forEach(child => this.init(child) );
 					}
+					
+					
 				},
+				addOption : function($obj){
+					this.$obj.append($obj);
+				},
+				setThisCategory:function(){
+					this.$obj.find("oprtion").each(function(){ 
+					})
+				}
 			},
 			categoryOption : {
 				$obj : $("#boardWriteWrap .board_category option"),
-				get : function(){
-					return $("<option></option>")
+				get : function(info){
+					let $option = $("<option></option>");
+					$option.data("id", info.category_id);
+					$option.text(info.category_name);
+					return $option;
+				},
+				domreset : function(){
+					this.$obj = $("#boardWriteWrap .board_category option");
+				}
+			},
+			submit : {
+				$obj : $("#boardWriteWrap .btn_boardwrite"),
+				events : {
+					click: function(event){
+						if(userManage.getUser() == false){
+							BoardException.globalMessage("로그인이 필요합니다.");
+							return;
+						}
+						
+						var requestSuccess = function(json){
+							const boardID = json.board_id;
+							boardWriteDatas.wrap.hide();
+							BoardData.load.boardContent( boardID );
+							
+							// 만들어야함
+						}
+						var param = {
+							type:"POST",
+							target: "BoardAddAction",
+							data: boardWriteDatas.wrap.getDatas(),
+							success: requestSuccess,
+						}
+						console.log(param);
+						AjaxRequest(param);
+					}
 				}
 			}
 	}
+	
 	var rtn = {
 		init : function(){
-			
+			EventController.datasInit( boardDatas );
+			EventController.datasInit( boardWriteDatas );
 		},
 		reload : {
 			content :function(data){
 				boardDatas.wrap.set(data);
 			}
 		},
-		boardWrite: boardWrite
+		boardWriteDatas: boardWriteDatas
 	}
 	return rtn;
 })();
@@ -541,11 +628,16 @@ var etcDOM = (function(){
 	}
 })
 var userManage = (function(){
+	let tempUser = {
+			
+	}
+	
 	var localLogin = function(name){
 		var requestSuccess = function(json){
 			Object.keys(json.data.info).forEach(function(attr){
 				localStorage.setItem(attr,json.data.info[attr]);
 			})
+			localStorage.setItem("user_pwd",tempUser.pwd);
 		}
 		var param = {
 				type: "GET",
@@ -567,6 +659,7 @@ var userManage = (function(){
 	
 	return {
 		login : function(name,pwd){
+			tempUser = {name:name, pwd:pwd};
 			var requestSuccess = function(json){
 				if(json.data.is_login_success){
 					localLogin(name);
@@ -589,10 +682,11 @@ var userManage = (function(){
 			return localStorage.getItem("user_name") != null ;
 		},
 		getUser : function(){
-			return {
-				name : localStorage.getItem("user_name"),
-				pwd : localStorage.getItem("user_pwd"),
-			}
+			let info = {
+					name : localStorage.getItem("user_name"),
+					pwd : localStorage.getItem("user_pwd"),
+				};
+			return (info.name && info.pwd) ? info : false;
 		},
 		isWriteable : function(){
 			return localStorage.getItem("user_permission_write") === "true";
@@ -601,11 +695,16 @@ var userManage = (function(){
 })();
 
 var system = (function(){
+	var getDOMData = function(){
+		return Object.keys(window).filter(key => key.split("DOM")[1] == "");
+	}
+	
+	var allDOMInit = function(){
+		getDOMData().forEach(key => window[key].init && window[key].init() );
+	}
 	var rtn = {
 			init : function(){
-				BoardListDOM.init();
-				BlindListDOM.init();
-				BoardContent.init();
+				allDOMInit();
 				BoardData.init();
 			}
 		};

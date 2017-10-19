@@ -114,20 +114,20 @@
 	<div id="fadeIn" class="hide">
 	</div>
 	<div id="boardWriteWrap" class="hide">
-		<form id="boardWriteContainer">	
+		<form id="boardWriteContainer" method="POST">	
 		    <header class="area_input area_title">
-		          <div class="area_close area_icon">  <i class="fa fa-times"></i> </div>
+		          <div class="area_close area_icon innercenter">  <i class="fa fa-times"></i> </div>
 		        <input type="text" class="inp_title" placeholder="제목" name="board_title"/>
 		    </header>
 		    <article class="area_input area_descript">
-		       <textarea class="inp_descript" name="board_content" placeholder="내용">              </textarea>
+		       <textarea class="inp_descript" name="board_content" placeholder="내용"></textarea>
 		    </article>
 		    <footer class="area_footer">
 		        <div class="area_category">
 		          <select class="board_category"></select>
 		        </div>
 		        <div class="area_boardwrite">
-		          <button class="btn_boardwrite"> 작성 </button>
+		          <button type="button" class="btn_boardwrite"> 작성 </button>
 		        </div>
 		    </footer>
 		</form>
