@@ -9,7 +9,7 @@
 	<meta content="telephone=no" name="format-detection">
 	<link href="css/main.css" rel="stylesheet">
 	<link href="css/outer.css" rel="stylesheet">
-</head> 
+</head>  
 <body>
 	<div id="wrap">
 		<header id="header">
@@ -137,7 +137,7 @@
 			</article>
 		</div>
 	</div>
-	<div id="fadeIn" class="hide">
+	<div id="fadeIn"  class="hide">
 	</div>
 	<div id="boardWriteWrap" class="hide">
 		<form id="boardWriteContainer" method="POST">	
@@ -158,10 +158,29 @@
 		    </footer>
 		</form>
 	</div>
-	<div id="confirmWrap">
+	<div id="confirmWrap" class="fixedcenter hide">
+		<header id="confirmHeader"></header>
+		<article id="confirmContent" class="innercenter">
+			<div class="area_content innerrowcenter">
+				<div class="area_icon_normal">
+					<span class="fa fa-exclamation-triangle"></span>
+				</div>
+				<div class="area_text area_message">
+					<span class="text_message"> 메세지가 들어갈 칸 </span>
+				</div>
+			</div>
+			<div class="area_btn_list innerrowcenter">
+				<div class="area_btn area_btn_ok">
+					<button class="btn_ok"> 확인 </button>
+				</div>
+				<div class="area_btn area_btn_cancel">
+					<button class="btn_cancel"> 취소 </button>
+				</div>
 
+			</div>
+		</article>
 	</div>
-	<div id="alertWrap" class="hide">
+	<div id="alertWrap" class="fixedcenter hide">
 		<div id="alertContainer" class="innercenter">
 			<div class="area_icon_normal">
 				<i class="fa fa-times-circle-o"></i>
