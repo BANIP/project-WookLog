@@ -1,0 +1,143 @@
+
+#fadeIn{
+	position:fixed;
+	left:0;
+	right:0;
+	width:100%;
+	height:100%;
+	background:hsla(0,0%,30%,50%);
+	transition:background 0.2s;
+}
+
+#fadeIn.hide{
+	background:hsla(0,0%,30%,100%);
+}
+
+
+#boardWriteWrap .inp_title, #boardWriteWrap .inp_descript{
+    background:none;
+	border:none;
+	color:var(--color-text);
+}
+
+#boardWriteWrap{
+  left:50%;
+  top:50%;
+  width:90%;
+  height:80%;
+  position:fixed;
+  z-index:100;
+}
+
+#boardWriteContainer{
+  display:flex;
+  flex-direction:column;
+  background:#1a1a1a;
+  border-radius:10px;
+  width:100%;
+  height:100%;
+  transform:translate(-50%,-50%);
+  box-shadow:0 2px 5px rgba(255,255,255,0.25);
+
+}
+
+#boardWriteWrap .area_close{
+
+  color:white;
+  position:absolute;
+  right:15px;
+  top:8px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+#boardWriteWrap .area_title{
+  background-color:#111;
+  border-radius:10px 10px 0 0;
+  padding:10px;
+  border-bottom:red 5px solid;
+}
+
+#boardWriteWrap .inp_title{
+  width:100%;
+
+  font-size:1.2em;
+}
+
+#boardWriteWrap .area_descript{
+  margin-top:10px;
+  flex-grow:1;
+  width:100%;
+  position:relative;
+}
+
+#boardWriteWrap .inp_descript{
+  width:100%;
+  position:absolute;
+    padding:8px;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+
+}
+
+#boardWriteWrap .area_footer{
+  text-align:right;
+  margin-top:5px;
+  padding:7px 8px;
+  background:hsl(0,0%,15%);
+  border-radius:0 0 10px 10px;
+  display:flex
+}
+#boardWriteWrap .board_category{
+	border-color: var(--color-prime);
+    background: none;
+    color: white;
+}
+#boardWriteWrap .board_category option{
+	color:black;
+}
+#boardWriteWrap .area_boardwrite{
+  margin-left:auto;
+}
+
+
+#alertWrap{
+	position:fixed;
+	top:50%;
+	left:50%;
+	width:200px;
+	height:100px;
+	transform:translate(-50%,-50%);
+	opacity:0.8;
+	z-index:150;
+}
+#alertContainer{	
+	width:100%;
+	height:100%;
+	background: var(--color-back);
+	border-radius:10px;
+	border: 2px solid var(--color-prime);
+	padding:10px;
+}
+
+#alertContainer .area_icon_normal{
+	font-size:1.5em;
+	color : var(--color-prime);
+}
+
+#alertContainer  .area_text{
+	color:white;
+	font-size:0.5em;
+	text-align:center;
+}
+
+.blind{
+	display:none!important;
+}
+
+.hide{
+	display:none;
+}
