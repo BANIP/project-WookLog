@@ -9,7 +9,6 @@ import java.util.Iterator;
 import banip.bean.*;
 import banip.data.User;
 import banip.query.*;
-import banip.sql.process.AddBoard;
 import banip.util.CategoryTree;
 public class BoardDao extends SQLDao{
 

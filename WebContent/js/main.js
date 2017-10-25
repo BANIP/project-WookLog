@@ -55,7 +55,7 @@ var BoardException = (function () {
 		}
 	}
 })();
-
+ 
 var AjaxRequest = (function () {
 	/**
 	 * 값이 undefined인지 아닌지 확인
@@ -170,7 +170,7 @@ var BoardData = (function () {
 	let load = {
 		category: function (categoryID) {
 			var requestSuccess = function (json) {
-				rtn.category = json.data;
+				externalCtx.category = json.data;
 				setCategorysParent(json.data);
 				BoardListDOM.reload.category(json.data);
 			};
@@ -187,7 +187,7 @@ var BoardData = (function () {
 		},
 		boardList: function (categoryID, listOffset) {
 			var requestSuccess = function (json) {
-				rtn.boardlist = json.data;
+				externalCtx.boardlist = json.data;
 				BoardListDOM.reload.boardList(json.data);
 			};
 			var param = {
@@ -234,10 +234,75 @@ var BoardData = (function () {
 			addUserParam(param);
 			AjaxRequest(param);
 		},
+		write : function(data){
+			let writedom = etcDOM.boardWriteDatas;
+
+			var requestSuccess = function (json) {
+				const boardID = json.data.board_id;
+				writedom.wrap.reset();
+				writedom.wrap.hide();
+				BoardException.print("작성 완료!");
+				load.boardContent(boardID);
+				load.boardComment(boardID);
+			}
+
+			var requestError = function (json) {
+				writedom.submit.setClickEvent("clickWrite");
+				BoardException.printError(json);
+			}
+
+			var param = {
+				type: "POST",
+				target: "BoardAddAction",
+				data: data,
+				success: requestSuccess,
+				error:requestError
+			}
+
+			AjaxRequest(param);
+		},
+		modify : function(data){
+			let writedom = etcDOM.boardWriteDatas;
+
+			var requestSuccess = function (json) {
+				const boardID = json.data.board_id;
+				writedom.wrap.reset();
+				writedom.wrap.hide();
+				BoardException.print("수정 완료!");
+				load.boardContent(boardID);
+				load.boardComment(boardID);
+			}
+
+			var requestError = function (json) {
+				writedom.submit.setClickEvent("clickModify");
+				BoardException.printError(json);
+			}
+
+			var param = {
+				type: "POST",
+				target: "BoardModifyAction",
+				data: data,
+				success: requestSuccess,
+				error:requestError
+			}
+
+			AjaxRequest(param);
+			
+		},
 		remove: function (boardID) {
 			let requestSuccess = function () {
-
-			}
+				// 작성해야함
+			};
+			var param = {
+				type: "GET",
+				target: "ReplyListView",
+				data: {
+					board_id: boardID,
+				},
+				success: requestSuccess,
+			};
+			addUserParam(param);
+			AjaxRequest(param);
 		}
 
 	}
@@ -251,7 +316,7 @@ var BoardData = (function () {
 			this.load.boardComment(defaultIndex.board);
 		},
 		load: load
-	};
+	}
 })();
 
 var BoardListDOM = (function () {
@@ -359,7 +424,7 @@ var BoardListDOM = (function () {
 			$obj: $("#navHeaderDefault .area_icon_write"),
 			events: {
 				click: function (event) {
-					let writedom = BoardContentDOM.boardWriteDatas;
+					let writedom = etcDOM.boardWriteDatas;
 					writedom.wrap.show();
 					writedom.submit.setClickEvent("clickWrite");
 					if (!writedom.categorySelect.isInit) {
@@ -469,7 +534,7 @@ var BoardListDOM = (function () {
 
 	return rtn;
 })();
-
+ 
 var BoardContentDOM = (function () {
 	var boardDatas = {
 		wrap: {
@@ -496,9 +561,12 @@ var BoardContentDOM = (function () {
 			events: {
 				click: function (event) {
 					let message = "이 글을 삭제합니다. <br /> 계속 진행하시겠어요?"
+					let successCallback = function(){
+						BoardData.load.remove( BoardData.board.board_id );
+					}
 
 					etcDOM.confirmDatas.wrap.show();
-					etcDOM.confirmDatas.wrap.set(message, )
+					etcDOM.confirmDatas.wrap.set(message, "삭제", successCallback);
 
 				}
 			}
@@ -507,152 +575,16 @@ var BoardContentDOM = (function () {
 			$obj: $("#contentHeader .area_icon_modify"),
 			events: {
 				click: function (event) {
-
+					let writedom = etcDOM.boardWriteDatas;
+					if(!writedom.categorySelect.isInit) writedom.categorySelect.init( BoardData.category );
+					writedom.wrap.show();					
+					writedom.wrap.set( BoardData.board );
+					writedom.submit.setClickEvent("clickModify");
 				}
 			}
 		}
 
 	}
-
-	var boardWriteDatas = {
-		wrap: {
-			$obj: $("#boardWriteWrap"),
-			show: function () {
-				this.$obj.slideDown();
-			},
-			hide: function () {
-				this.$obj.slideUp();
-			},
-			reset: function () {
-				let dom = boardWriteDatas;
-				dom.title.reset();
-				dom.content.reset();
-			},
-			getDatas: function () {
-				var user = userManage.getUser();
-				var dom = boardWriteDatas;
-				return {
-					board_title: dom.title.$obj.val(),
-					board_content: dom.content.$obj.val(),
-					category_id: dom.categoryOption.$obj.filter(":selected").data("id"),
-					user_pwd: user.pwd,
-					user_name: user.name,
-				};
-
-			},
-		},
-		title: {
-			$obj: $("#boardWriteWrap .inp_title"),
-			reset: function () {
-				this.$obj.text();
-			}
-		},
-		close: {
-			$obj: $("#boardWriteWrap .area_close"),
-			events: {
-				click: function () {
-					boardWriteDatas.wrap.hide();
-				}
-			},
-		},
-		content: {
-			$obj: $("#boardWriteWrap .inp_descript"),
-			reset: function () {
-				this.$obj.text();
-			}
-		},
-		categorySelect: {
-			$obj: $("#boardWriteWrap .board_category"),
-			isInit: false,
-			init: function (category) {
-				this.isInit = true;
-				const dom = boardWriteDatas;
-				const $option = dom.categoryOption.get(category.info);
-
-				this.addOption($option);
-
-				// 자식요소 재귀로 추가
-				if (category.child && category.child.length != 0) {
-					category.child.forEach(child => this.init(child));
-				}
-
-
-			},
-			addOption: function ($obj) {
-				this.$obj.append($obj);
-			},
-			setThisCategory: function () {
-				this.$obj.find("oprtion").each(function () {
-				})
-			}
-		},
-		categoryOption: {
-			$obj: $("#boardWriteWrap .board_category option"),
-			get: function (info) {
-				let $option = $("<option></option>");
-				$option.data("id", info.category_id);
-				$option.text(info.category_name);
-				return $option;
-			},
-			domreset: function () {
-				this.$obj = $("#boardWriteWrap .board_category option");
-			}
-		},
-		submit: {
-			$obj: $("#boardWriteWrap .btn_boardwrite"),
-			events: {
-				click: function (event) {
-					boardWriteDatas.submit.events.clickDefault(event);
-				},
-				clickDefault: function (event) {
-					BoardException.print("서버의 응답을 기다리는 중입니다. <br />잠시만 기다려주세요..", "fa-send");
-				},
-				clickWrite: function (event) {
-					let boardWriteDatas = dom;
-					if (userManage.getUser() == false) {
-						BoardException.print("로그인이 필요합니다.");
-						return;
-					} else if (!userManage.isWriteable()) {
-						BoardException.print("글을 작성할 권한이 없습니다.");
-						return;
-					}
-
-					dom.submit.setClickEvent("clickDefault");
-
-					var requestSuccess = function (json) {
-						const boardID = json.data.board_id;
-						dom.wrap.reset();
-						dom.wrap.hide();
-						BoardException.print("작성 완료!");
-						BoardData.load.boardContent(boardID);
-						BoardData.load.boardComment(boardID);
-						// 만들어야함
-					}
-
-					var requestFail = function (json) {
-						dom.submit.setClickEvent("clickWrite");
-						BoardException.printError(json);
-					}
-					var param = {
-						type: "POST",
-						target: "BoardAddAction",
-						data: boardWriteDatas.wrap.getDatas(),
-
-						success: requestSuccess,
-					}
-					AjaxRequest(param);
-				},
-				clickModify: function (event) {
-
-				}
-			},
-			setClickEvent: function (eventName) {
-				let listener = this.events[eventName];
-				if (listener)
-					this.$obj.off("click").on("click", )
-			},
-		},
-	};
 
 	var boardCmtDatas = {
 		wrap: {
@@ -675,7 +607,6 @@ var BoardContentDOM = (function () {
 				$li.slideDown();
 			},
 			add: function (data) {
-				console.log(data);
 				let $li = boardCmtDatas.li.get(data);
 				this.$obj.append($li);
 			},
@@ -786,7 +717,6 @@ var BoardContentDOM = (function () {
 	var rtn = {
 		init: function () {
 			EventController.datasInit(boardDatas);
-			EventController.datasInit(boardWriteDatas);
 			EventController.datasInit(boardCmtDatas);
 			EventController.datasInit(boardCmtWriteDatas);
 
@@ -801,8 +731,9 @@ var BoardContentDOM = (function () {
 				boardCmtDatas.count.set(data.list.length);
 			}
 		},
-		boardWriteDatas: boardWriteDatas,
 		boardCmtWriteDatas: boardCmtWriteDatas,
+		boardCmtDatas: boardCmtDatas,
+		boardDatas: boardDatas,
 	}
 	return rtn;
 })();
@@ -874,15 +805,174 @@ var BlindListDOM = (function () {
 })();
 
 var etcDOM = (function () {
+	var boardWriteDatas = {
+		wrap: {
+			$obj: $("#boardWriteWrap"),
+			show: function () {
+				etcDatas.fadeIn.show();
+				this.$obj.slideDown();
+			},
+			hide: function () {
+				etcDatas.fadeIn.hide();
+				this.$obj.slideUp();
+			},
+			set: function(data){
+				let dom = boardWriteDatas;
+				dom.title.set(data.board_title);
+				dom.content.set(data.board_content);
+				dom.categorySelect.select( data.board_category_name );
+			},
+			reset: function () {
+				let dom = boardWriteDatas;
+				dom.title.reset();
+				dom.content.reset();
+			},
+			getWriteData: function () {
+				var user = userManage.getUser();
+				var dom = boardWriteDatas;
+				return {
+					board_title: dom.title.$obj.val(),
+					board_content: dom.content.$obj.val(),
+					category_id: dom.categoryOption.$obj.filter(":selected").data("id"),
+					user_pwd: user.pwd,
+					user_name: user.name,
+				};
+			},
+			getModifyData: function(){
+				var user = userManage.getUser();
+				var dom = boardWriteDatas;
+				return {
+					board_title: dom.title.$obj.val(),
+					board_content: dom.content.$obj.val(),
+					board_id: BoardData.board.board_id,
+					user_pwd: user.pwd,
+					user_name: user.name,
+				};
+			},
+		},
+		title: {
+			$obj: $("#boardWriteWrap .inp_title"),
+			reset: function () {
+				this.$obj.text();
+			},
+			set: function(value){ this.$obj.val(value)},
+		},
+		close: {
+			$obj: $("#boardWriteWrap .area_close"),
+			events: {
+				click: function () {
+					boardWriteDatas.wrap.hide();
+				}
+			},
+		},
+		content: {
+			$obj: $("#boardWriteWrap .inp_descript"),
+			reset: function () {
+				this.$obj.text();
+			},
+			set: function(value){ this.$obj.val(value)},
+		},
+		categorySelect: {
+			$obj: $("#boardWriteWrap .board_category"),
+			isInit: false,
+			init: function (category) {
+				this.isInit = true;
+				const dom = boardWriteDatas;
+				const $option = dom.categoryOption.get(category.info);
+
+				this.addOption($option);
+
+				// 자식요소 재귀로 추가
+				if (category.child && category.child.length != 0) {
+					category.child.forEach(child => this.init(child));
+				}
+
+
+			},
+			addOption: function ($obj) {
+				this.$obj.append($obj);
+			},
+			setThisCategory: function () {
+				this.$obj.find("oprtion").each(function () {
+				})
+			},
+			select : function( categoryName ){
+				this.$obj.val(categoryName).attr("selected","selected");
+			},
+		},
+		categoryOption: {
+			$obj: $("#boardWriteWrap .board_category option"),
+			get: function (info) {
+				let $option = $("<option></option>");
+				$option.data("id", info.category_id);
+				$option.text(info.category_name);
+				return $option;
+			},
+			domreset: function () {
+				this.$obj = $("#boardWriteWrap .board_category option");
+			}
+		},
+		submit: {
+			$obj: $("#boardWriteWrap .btn_boardwrite"),
+			events: {
+				click: function (event) {
+					boardWriteDatas.submit.events.clickDefault(event);
+				},
+				clickDefault: function (event) {
+					BoardException.print("서버의 응답을 기다리는 중입니다. <br />잠시만 기다려주세요..", "fa-send");
+				},
+				clickWrite: function (event) {
+					let dom = boardWriteDatas;
+					if (!userManage.isLogined()) {
+						BoardException.print("로그인이 필요합니다.");
+						return;
+					} else if (!userManage.isWriteable()) {
+						BoardException.print("글을 작성할 권한이 없습니다.");
+						return;
+					}
+
+					let data = boardWriteDatas.wrap.getWriteData();
+					dom.submit.setClickEvent("clickDefault");
+					BoardData.load.write(data);
+
+				},
+				clickModify: function (event) {
+					let dom = boardWriteDatas;
+					let isModifiable = BoardData.board.board_user_name == userManage.getUser.name;
+					if (!userManage.isLogined()) {
+						BoardException.print("로그인이 필요합니다.");
+						return;
+					} else if (!isModifiable) {
+						BoardException.print("글을 수정할 권한이 없습니다.");
+						return;
+					}
+
+					let data = boardWriteDatas.wrap.getModifyData();
+					dom.submit.setClickEvent("clickDefault");
+					BoardData.load.modify(data);
+
+				}
+			},
+			setClickEvent: function (eventName) {
+				let listener = this.events[eventName];
+				this.clearClickEvent();
+				this.$obj.on("click", this.events[eventName] );
+			},
+			clearClickEvent: function(){
+				this.$obj.off("click");
+			}
+		},
+	};
+
 	let confirmDatas = {
 		wrap: {
 			$obj: $("#confirmWrap"),
 			show: function () {
-				ectDatas.fadeIn.show();
+				etcDatas.fadeIn.show();
 				this.$obj.slideDown();
 			},
 			hide: function () {
-				ectDatas.fadeIn.hide();
+				etcDatas.fadeIn.hide();
 				this.$obj.slideUp();
 			},
 			set: function (message, successString, successCallback) {
@@ -908,7 +998,7 @@ var etcDOM = (function () {
 			},
 			setEvent: function (callback) {
 				this.clearEvent();
-				this.$obj.on(callback);
+				this.$obj.on("click",callback);
 			},
 			clearEvent: function () {
 				this.$obj.off("click");
@@ -918,14 +1008,14 @@ var etcDOM = (function () {
 			$obj: $("#confirmWrap .btn_cancel"),
 			events: {
 				click: function (event) {
-					confrimDOM.wrap.hide();
+					confirmDatas.wrap.hide();
 				}
 			}
 		}
 
 	};
 
-	let ectDatas = {
+	let etcDatas= {
 		fadeIn: {
 			$obj: $("#fadeIn"),
 			show: function () {
@@ -939,10 +1029,12 @@ var etcDOM = (function () {
 
 	return {
 		init: function () {
-			EventController.dataInit(ectDatas);
-			EventController.dataInit(confirmDatas);
+			EventController.datasInit(etcDatas);
+			EventController.datasInit(confirmDatas);
+			EventController.datasInit(boardWriteDatas);
 		},
-		ectDatas: ectDatas,
+		etcDatas: etcDatas,
+		boardWriteDatas: boardWriteDatas,
 		confirmDatas: confirmDatas,
 	}
 })();
@@ -1035,11 +1127,12 @@ var system = (function () {
 	var rtn = {
 		init: function () {
 			allDOMInit();
-			BoardData.init();
+			BoardData.init(); 
 		}
-	};
+	}; 
 	return rtn
 })();
 
 system.init();
 
+   
