@@ -7,6 +7,7 @@ import banip.sql.BoardDao;
 import banip.action.ActionReply;
 import banip.util.BoardJSON;
 import banip.bean.ReplyBean;
+import banip.bean.ReplyWriteBean;
 import banip.data.StatusCode;
 import banip.data.User;
 
@@ -55,21 +56,22 @@ public class ReplyAddAction extends ActionReply {
 	protected BoardJSON executeMain(HttpServletRequest request) {
 		// TODO Auto-generated method stub
 		BoardDao boardDao = new BoardDao();
-		boolean isAddSuccess = boardDao.addReply( getReplyBean(request) , super.getUser(request).getID() );
+		ReplyBean bean = getReplyBean(request);
+		ReplyWriteBean writebean = boardDao.addReply( bean, super.getUser(request) );
 		boardDao.close(true);
-		return getResultJSON(isAddSuccess);
+		return getResultJSON(writebean);
 
 	}
 
 	/**
 	 * 덧글 작성 결과에 대응하는 json 객체 반환
-	 * @param isAddSuccess 덧글작성이 성공하였는가?
+	 * @param writebean  덧글작성이 성공하였는가?
 	 * @return baordjson 객체
 	 */
-	private BoardJSON getResultJSON(boolean isAddSuccess) {
+	private BoardJSON getResultJSON(ReplyWriteBean writebean ) {
 		// TODO Auto-generated method stub
-		if(isAddSuccess) {
-			return new BoardJSON(StatusCode.STATUS_SUCCESS);
+		if(writebean.isIS_SUCCESS()) {
+			return writebean.getBoardJSON();
 		} else {
 			return new BoardJSON(StatusCode.STATUS_SERVER,"서버상의 오류로 덧글 작성에 실패하였습니다. 관리자에게 문의해주세용");
 		}

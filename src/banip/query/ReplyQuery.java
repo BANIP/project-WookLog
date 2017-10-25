@@ -1,9 +1,12 @@
 package banip.query;
 
+import java.util.ArrayList;
+
 import banip.bean.ReplyBean;
+import banip.data.User;
 
 public class ReplyQuery extends SQLQuery{
-	protected ReplyBean bean;
+	ReplyBean bean;
 	public ReplyQuery(ReplyBean bean){
 		this.bean = bean;
 	}
@@ -46,9 +49,9 @@ public class ReplyQuery extends SQLQuery{
  * @return 쿼리
  */
 	public String getSelectListQuery(int boardID){
-		String query = "SELECT REPLY_ID, REPLY_BOARD_ID, REPLY_USER_ID, REPLY_HISTORY_ID, REPLY_DATE "
-				+ "FROM BOARD_REPLY_VIEW "
-				+ String.format("WHERE REPLY_BOARD_ID = %d;", boardID);
+		String fields = bean.getFieldsString();
+		String query = String.format("SELECT %s FROM BOARD_REPLY_VIEW ", fields)
+				+ String.format("WHERE REPLY_BOARD_ID = %d ORDER BY REPLY_DATE DESC;", boardID);
 		
 		return query;
 	}
@@ -65,24 +68,18 @@ public class ReplyQuery extends SQLQuery{
 	 * @필요변수<ul>
 	 * 	<li>REPLY_BOARD_ID</li>
 	 *	<li>REPLY_CONTENT</li> 
+	 * @쿼리결과값<ul>
+	 * 	IS_SUCCESS 게시글 작성이 성공했는지에 대한 여부
+	 *  REPLY_ID 작성된 덧글의 기본키
+	 *  HISTORY_ID 작성된 덧글의 기본키
 	 * </ul>
-	 * @사용테이블<ul>
-	 * 	<li>INSERT BOARD_REPLY_HISTORY(REPLY_CONTENT)</li>
-	 *	<li>INSERT BOARD_REPLY(REPLY_BOARD_ID, REPLY_USER_ID, REPLY_HISTORY_ID)</li> 
-	 * </ul>
-	 * @쿼리결과값 int 5
 	 * @param userID 덧글의 작성자 ID
 	 * @return 쿼리
 	 */
-	public String getAddReplyQuery(int userID){
+	public String getAddReplyQuery(User user){
+		int boardID = bean.getREPLY_BOARD_ID();
 		String replyContent = bean.getREPLY_CONTENT();
-		int replyBoardID = bean.getREPLY_BOARD_ID();
-		String query = String.format("INSERT INTO BOARD_REPLY_HISTORY(REPLY_CONTENT) VALUES('%s');",replyContent)
-				+ "SET @HISTORY_ID = LAST_INSERT_ID();"
-				+ "INSERT INTO BOARD_REPLY(REPLY_BOARD_ID, REPLY_USER_ID, REPLY_HISTORY_ID)"
-				+ String.format(" VALUES(%d, %d, @HISTORY_ID);",replyBoardID,userID)
-				+ "SET @REPLY_ID = LAST_INSERT_ID();"
-				+ "UPDATE BOARD_REPLY_HISTORY SET HISTORY_REPLY_ID = @REPLY_ID WHERE HISTORY_ID = @HISTORY_ID;";
+		String query = String.format("CALL BOARD_DO_REPLYWRITE(%d,'%s','%s','%s');", boardID, replyContent, user.getName(), user.getPWD() );		
 		return query;
 	}
 
@@ -121,7 +118,7 @@ public class ReplyQuery extends SQLQuery{
 	 * @return 쿼리
 	 */
 	public String getDeleteReplyQuery(int replyID){
-		String query = "DELETE FROM BOARD_REPLY"
+		String query = "DELETE FROM BOARD_REPLY "
 				+ String.format("WHERE REPLY REPLY_ID = %d",replyID);
 		return query;
 	}

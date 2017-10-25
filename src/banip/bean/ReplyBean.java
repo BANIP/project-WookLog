@@ -1,7 +1,6 @@
 package banip.bean;
 
 import java.sql.Timestamp;
-import java.sql.Timestamp;
 
 import banip.query.ReplyQuery;
 public class ReplyBean extends SQLBean{

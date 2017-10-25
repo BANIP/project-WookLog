@@ -1,6 +1,9 @@
 package banip.query;
 
+import java.util.ArrayList;
+
 import banip.bean.*;
+import banip.data.User;
 
 public class BoardQuery extends SQLQuery{
 	protected BoardBean bean;
@@ -80,7 +83,7 @@ public class BoardQuery extends SQLQuery{
 	 *   <li>INSERT BOARD_HISTORY(HISTORY_TITLE, HISTORY_CONTENT)</li>
 	 *   <li>INSERT BOARD_MAIN(BOARD_CATEGORY_ID, BOARD_USER_ID, BOARD_HISTORY_ID)</li>
 	 * </ul>
-	 * @쿼리결과값 int 추가된 게시글의 기본키
+	 * @쿼리결과값 int 6
 	 * @메커니즘<ol>
 	 * 	<li> BOARD_HISTORY에 새로운 글 내용을 작성 </li>
 	 * 	<li> BOARD_MAIN에 history를 참조하는 튜플 작성 </li>
@@ -89,21 +92,24 @@ public class BoardQuery extends SQLQuery{
 	 * @param boardUserID 글의 작성자로 사용할 사용자 아이디
 	 * @return 쿼리
 	 */
-	public String getAddBoardQuery(int boardUserID){
-		String query;
+	public String getAddBoardQuery(User user){
+		
 		String boardTitle = bean.getBOARD_TITLE();
 		String boardContent = bean.getBOARD_CONTENT();
 		int boardCategoryID = bean.getBOARD_CATEGORY_ID();
-		
-		query = String.format("INSERT INTO BOARD_HISTORY(HISTORY_TITLE, HISTORY_CONTENT) VALUES('%s','%s');",boardTitle,boardContent)
-		+ "SET @ID_HISTORY = LAST_INSERT_ID();"
-		+ String.format("INSERT INTO BOARD_MAIN(BOARD_CATEGORY_ID, BOARD_USER_ID, BOARD_HISTORY_ID) VALUES(%d,%d,@ID_HISTORY);",boardCategoryID,boardUserID)
-		+ "SET @ID_BOARD = LAST_INSERT_ID();"
-		+ "UPDATE BOARD_HISTORY SET HISTORY_BOARD_ID = @ID_BOARD WHERE HISTORY_BOARD_ID = @ID_BOARD;"
-		+ "SELECT  @ID_BOARD;";
+		String query = "";
+		query = String.format("CALL BOARD_DO_WRITE(%d, '%s', '%s', '%s', '%s')", 
+				boardCategoryID, 
+				boardTitle,
+				boardContent,
+				user.getName(),
+				user.getPWD());
 		return query;
 	}
 	
+	public String getLastIDQuery() {
+		return "SELECT LAST_INSERT_ID();";
+	}
 	/**
 	 * 게시글을 삭제하는 쿼리를 반환
 	 * @사용테이블<ul>

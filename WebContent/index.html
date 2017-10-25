@@ -95,18 +95,34 @@
 					<hr>
 				</section>
 				<section id="commentWrap">
-					<header id="CommentHeader">
-						댓글[1]
-					</header>
-					<div id="commentContainer">
-						<div id="commentForm">
-							<input class="inp_name inp" placeholder="이름" type="text"> 
-							<input class="inp_password inp" placeholder="비밀번호" type="password"> 
-							<input class="inp_descript inp" placeholder="내용" type="text"> 
-							<button>입력</button>
-						</div>
+					<div id="commentWriteWrap">
+						<form id="commentWriteContainer">
+							<div class="item_inner_left area_icon innercenter">
+								<span class="fa fa-pencil"> </span>
+							</div>
+							<div class="item_inner_right">
+								<div class="area_user area_inp">
+									<input class="inp_name inp" placeholder="이름" type="text" /> 
+									<input class="inp_password inp" placeholder="비밀번호" type="password" /> 
+								</div>
+								<div class="area_content area_inp">
+									<input class="inp_descript inp" placeholder="공개 댓글 추가..." type="text" /> 
+									<button type="button" class="btn_submit">입력</button>
+								</div>
+							</div>
+
+						</form>
 						<ul class="area_listing" id="commentContent"></ul>
 					</div>
+					<div id="commentListWrap">
+						<header id="CommentHeader">
+							댓글[<span class="text_count"></span>]
+						</header>
+						<ul id="commentListContainer">
+
+						</ul>
+					</div>
+
 				</section>
 			</article>
 		</div>
@@ -164,21 +180,6 @@
 						<hr>
 				</div>
 			</li>
-			<li class="item_comment cloneable">
-				<div class="item_wrap">
-					<div class="item_inner_top">
-						<p class="item_descript"></p>
-					</div>
-					<div class="item_inner_bottom">
-						<div class="item_inner_left">
-							<p class="item_wrap"><span class="item_name"></span></p>
-						</div>
-						<div class="item_inner_right">
-							<p class="item_wrap"><span class="item_date"></span> <span class="inp_div"></span> <span class="item_ip"></span></p>
-						</div>
-					</div>
-				</div>
-			</li>
 			<li class="item_category cloneable">
 				<div class="inner_depth"></div>
 				<div class="inner_boardcount">
@@ -203,6 +204,21 @@
 					</div>
 				</div>
 			</li>
+				<li class="item_comment cloneable">
+					<div class="item_wrap">
+						<div class="item_inner_top">
+							<div class="area_text area_name">
+								<span class="text_name"> </span>
+							</div>
+							<div class="area_date">
+								<span class="text_date"> </span>
+							</div>
+						</div>
+						<div class="item_inner_bottom area_descript">
+							<span class="text_descript"> </span>
+						</div>
+					</div>
+				</li>
 		</ul>
 	</div>
 	<script src="js/jquery.min.js"></script> 

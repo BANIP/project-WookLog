@@ -61,26 +61,24 @@ public class ReplyListView extends ActionReply{
 		// TODO Auto-generated method stub
 		BoardJSON resultJSON = new BoardJSON();
 		JSONArray dataArray = new JSONArray();
-		resultJSON.putData("list", dataArray);
 		while(replyList.hasNext()) {
 			ReplyBean bean = replyList.next();
 			dataArray.add( getReplyJSON(bean) );
 		}
+		resultJSON.putData("list", dataArray);
 		return resultJSON;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private Object getReplyJSON(ReplyBean bean) {
+	private JSONObject getReplyJSON(ReplyBean bean) {
 		// TODO Auto-generated method stub
-		JSONObject json = new JSONObject();
-		json.put("tREPLY_ID",bean.getREPLY_ID());
-		json.put("tREPLY_BOARD_ID",bean.getREPLY_BOARD_ID());
-		json.put("tREPLY_USER_ID",bean.getREPLY_USER_ID());
-		json.put("tREPLY_USER_NAME",bean.getREPLY_USER_NAME());
-		json.put("tREPLY_DATE",bean.getREPLY_DATE());
-		json.put("tREPLY_DATE_MODIFY",bean.getREPLY_DATE_MODIFY());
-		json.put("tREPLY_CONTENT",bean.getREPLY_CONTENT());
-		return json;
+		try {
+			return bean.getJSON();
+		} catch (Exception e) {
+			// TODO: handle exception
+		    e.printStackTrace();
+			return null;
+		}
+
 	}
 
 

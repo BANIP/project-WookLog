@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import banip.bean.*;
+import banip.data.User;
 import banip.query.*;
+import banip.sql.process.AddBoard;
 import banip.util.CategoryTree;
 public class BoardDao extends SQLDao{
 
@@ -134,28 +136,29 @@ public class BoardDao extends SQLDao{
 	 * @param boardUserID 등록할 유저의 ID키
 	 * @return 등록된 게시글의 기본키, 등록실패시 -1
 	 */
-	public int addBoard(BoardBean bean,int userID){
+	public BoardWriteBean addBoard(BoardBean bean,User user){
 		BoardQuery queryList = (BoardQuery) bean.getQuery();
-		String query = queryList.getAddBoardQuery(userID);
+		String query = queryList.getAddBoardQuery(user);
 		try{
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
-			return rs.getInt(1);
+			BoardWriteBean writebean = new BoardWriteBean();
+			if(rs.next()){
+				writebean.setIS_SUCCESS( rs.getBoolean(1));
+				writebean.setHISTORY_ID( rs.getInt(2));
+				writebean.setBOARD_ID( rs.getInt(3));
+				return writebean;
+			}
+			
 		} catch(SQLException ee){
 			printException(ee, query);
 		} finally{
 			close(false);
 		}
-		return -1;
+		return null;
 	}
 	
-	public int addBoard(BoardBean bean,String userName){
-		UserDao userdao = new UserDao();
-		int userID = userdao.getUserID(userName);
-		userdao.close(true);
-		return this.addBoard(bean,userID);
-	}
-	
+		
 	/**
 	 * 게시글의 수정
 	 * @param bean 게시글의 빈 객체
@@ -266,20 +269,25 @@ public class BoardDao extends SQLDao{
 	 * @param userID 덧글남기는 사용자의 id
 	 * @return 제대로 등록 되었는지 여부
 	 */
-	public boolean addReply(ReplyBean bean,int userID){
+	public ReplyWriteBean addReply(ReplyBean bean,User user){
 		ReplyQuery queryList = (ReplyQuery) bean.getQuery();
-		String query = queryList.getAddReplyQuery(userID);
+		String query = queryList.getAddReplyQuery(user);
+		ReplyWriteBean writebean = new ReplyWriteBean();
 		try{
 			pstmt = conn.prepareStatement(query);
-			int result = pstmt.executeUpdate();
-			if(result == 0) return false;
-			return true;
+			rs = pstmt.executeQuery();
+			while(rs.next()) {
+				writebean.setIS_SUCCESS( rs.getBoolean(1) );
+				writebean.setREPLY_ID( rs.getInt(2) );
+				writebean.setHISTORY_ID( rs.getInt(3) );
+			}
 		} catch(SQLException ee){
 			printException(ee, query);
+			writebean.setIS_SUCCESS( false );
 		} finally{
 			close(false);
 		}
-		return false;
+		return writebean;
 	}	
 	/** 
 	 * 덧글 목록 획득
@@ -288,7 +296,7 @@ public class BoardDao extends SQLDao{
 	 */
 	public ArrayList<ReplyBean> getReplyList(int boardID){
 		ArrayList<ReplyBean> beanArray = new ArrayList<ReplyBean>();
-		String query = new ReplyQuery(null).getSelectListQuery(boardID);
+		String query = new ReplyQuery( new ReplyBean() ).getSelectListQuery(boardID);
 		try{
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
@@ -301,6 +309,7 @@ public class BoardDao extends SQLDao{
 				bean.setREPLY_DATE( rs.getTimestamp(5) );
 				bean.setREPLY_DATE_MODIFY( rs.getTimestamp(6) );
 				bean.setREPLY_CONTENT( rs.getString(7) );
+				beanArray.add(bean);
 			}
 		} catch(SQLException ee){
 			printException(ee, query);

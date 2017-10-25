@@ -1,43 +1,75 @@
 var BoardException = (function(){
-	$messageWrap = $("#alertWrap");
+
+	let messageDatas = {
+		wrap : {
+			$obj : $("#alertWrap"),
+			showStart : function(){
+				this.$obj.slideDown().delay(2000).slideUp();
+			}
+		},
+		icon : {
+			$obj : $("#alertWrap .area_icon_normal > i"),
+			set : function(faClass){
+				this.reset();
+				this.$obj.addClass(faClass);
+			},
+			reset : function(){
+				this.$obj.removeClass().addClass("fa");
+			},
+				
+		},
+		text : {
+			$obj : $("#alertWrap .area_text"),
+			set : function(message){
+				this.$obj.html(message);
+			}
+		},
+	}
+
+
 	return {
 		boardList : function(json){
 			if(BoardListDOM.categoryDatas.wrap.isOpen() ) BoardListDOM.categoryDatas.wrap.hide();
 			BoardListDOM.boardListDatas.alert.show( `${json.status} (${json.statuscode})` );
 		},
-		globalMessage : function(message,faClass){
-			if(typeof faClass != "undefined"){
-				$messageWrap.find(".fa").removeClass("fa-times-circle-o")
-					.addClass(faClass);
-			}
-			$messageWrap.find(".text_message").text(message)
-			$messageWrap.slideDown().delay(2000).slideUp();
+		print : function(message,faClass = "fa-times-circle-o"){
+			let dom = messageDatas;
+			dom.icon.set(faClass);
+			dom.text.set(message);
+			dom.wrap.showStart();
 		},
-		globalError : function(json){
+		messageDatas : messageDatas,
+		
+		printError : function(json){
 			var message;
 			switch(json.status){
 				case 500 :
 					message = "서버 오류로 해당 작업을 수행할 수 없습니다.";
 					break;
 				default:
-					message = json.status;
+					message = json.status
 					break;
 			}
-			BoardException.globalMessage( message );
+			BoardException.print( message );
 			
 		}
 	}
-})();
+})(); 
 
 var AjaxRequest = (function(){
+	/**
+	 * 값이 undefined인지 아닌지 확인
+	 * @param  {Object}  value 확인할 값
+	 * @return {Boolean}       undefined일시 true 반환
+	 */
 	var isNull = function(value){
 		return typeof value == "undefined";
 	}
 	
 	/**
-	 * 액션객체의 클래스명을 통신가능한 url로 변경
-	 * @param name String 액션객체의 클래스명
-	 * @return ajax로 통신할 url
+	 * 액션객체의 클래스명을 통신 가능한 url로 변경
+	 * @param  {String} name 액션 객체의 클래스명
+	 * @return {String}      ajax로 통신하기 위한 url
 	 */
 	var getActionURL = function(name){
 		return name + ".do";
@@ -50,7 +82,7 @@ var AjaxRequest = (function(){
 	var getAjaxParam = function(param){
 		param.url = getActionURL(param.target);
 		if( isNull(param.dataType) ) param.dataType = "json";
-		if( isNull(param.error) ) param.error = BoardException.globalError;
+		if( isNull(param.error) ) param.error = BoardException.printError;
 		param.defaultSuccess = param.success;
 		param.success = function(json){
 			if( json.statuscode != 0 ){
@@ -106,10 +138,18 @@ var EventController = (function(){
 	
 	return rtn;
 })();
-
+ 
 var BoardData = (function(){
-	var externalCtx;
+	var defaultIndex = {
+			category :1,
+			board : 1,
+	}
 	
+	var externalCtx;
+	/**
+	 * 카테고리들의 부모 객체를 설정함
+	 * @param {Object} categoryData 카테고리 트리 데이터
+	 */
 	var setCategorysParent = function(categoryData){
 		categoryData.child.forEach(childObject => {
 			childObject.parent = categoryData;
@@ -128,10 +168,13 @@ var BoardData = (function(){
 			category : null,
 			boardlist : null,
 			board: null,
+			comment: null,
 			init : function(){
 				externalCtx = this;
-				this.load.category(1);
-				this.load.boardList(1,1);
+				this.load.category(defaultIndex.category);
+				this.load.boardList( defaultIndex.category ,1);
+				this.load.boardContent( defaultIndex.board );
+				this.load.boardComment( defaultIndex.board );
 			},
 			load : {
 				category : function(categoryID){
@@ -182,7 +225,22 @@ var BoardData = (function(){
 							success : requestSuccess,
 					}
 					addUserParam(param);
-					console.log(param)
+					AjaxRequest(param);
+				},
+				boardComment : function(boardID){
+					var requestSuccess = function(json){
+						BoardData.comment = json.data;
+						BoardContentDOM.reload.comment( json.data );
+				};
+					var param = {
+							type : "GET",
+							target : "ReplyListView",
+							data : {
+								board_id : boardID,
+							},
+							success : requestSuccess,
+					}
+					addUserParam(param);
 					AjaxRequest(param);
 				}
 			}
@@ -192,7 +250,7 @@ var BoardData = (function(){
 })();
 
 var BoardListDOM = (function(){
-
+ 
 	var boardListDatas = {
 			wrap : {
 				$obj : $("#navContainer"),
@@ -218,6 +276,7 @@ var BoardListDOM = (function(){
 					_click : function(event){
 						let boardID = $(this).data("board_id");
 						BoardData.load.boardContent(boardID);
+						BoardData.load.boardComment(boardID);
 					}
 				}
 			},
@@ -297,6 +356,7 @@ var BoardListDOM = (function(){
 					click : function(event){
 						let writedom = BoardContentDOM.boardWriteDatas;
 						writedom.wrap.show();
+						writedom.submit.setClickEvent("clickWrite");
 						if( !writedom.categorySelect.isInit ){
 							writedom.categorySelect.init(BoardData.category);
 							writedom.categoryOption.domreset();
@@ -304,7 +364,7 @@ var BoardListDOM = (function(){
 						
 					},
 					load : function(event){
-						$this = headerDatas.mainIconWrite.$obj;
+						let $this = headerDatas.mainIconWrite.$obj;
 						if( userManage.isWriteable() ) $this.show();						
 					}
 				}
@@ -418,8 +478,21 @@ var BoardContentDOM = (function(){
 				$obj.find(".text_date_created").text(data.board_date_create);
 				$obj.find(".text_date_modified").text(data.board_date_modify);
 				$obj.find("#contentBody").text(data.board_content);
+			},
+			isModifiable : function(){
+				return userManage.getUser().name == BoardData.board.board_user_name;
+			},
+			isRemovable : function(){
+				return userManage.isRemoveable();
 			}
+		},
+		removeIcon : {
+			
+		},
+		modifyIcon : {
+			
 		}
+		
 	}
 	
 	var boardWriteDatas = {
@@ -446,6 +519,7 @@ var BoardContentDOM = (function(){
 						user_pwd: user.pwd,
 						user_name: user.name,
 					};
+
 				},
 			},
 			title : {
@@ -460,8 +534,7 @@ var BoardContentDOM = (function(){
 					click :function(){
 						boardWriteDatas.wrap.hide();
 					}
-				}
-			
+				},
 			},
 			content : {
 				$obj : $("#boardWriteWrap .inp_descript"),
@@ -510,42 +583,204 @@ var BoardContentDOM = (function(){
 				$obj : $("#boardWriteWrap .btn_boardwrite"),
 				events : {
 					click: function(event){
-						if(userManage.getUser() == false){
-							BoardException.globalMessage("로그인이 필요합니다.");
+						boardWriteDatas.submit.events.clickDefault(event);
+					},
+					clickDefault : function(event){
+						BoardException.print("서버의 응답을 기다리는 중입니다. <br />잠시만 기다려주세요..","fa-send");
+					},
+					clickWrite: function(event){
+						let boardWriteDatas = dom;
+						if( userManage.getUser() == false){
+							BoardException.print("로그인이 필요합니다.");
+							return;
+						} else if( !userManage.isWriteable() ){
+							BoardException.print("글을 작성할 권한이 없습니다.");
 							return;
 						}
 						
+						dom.submit.setClickEvent("clickDefault");
+						
 						var requestSuccess = function(json){
-							const boardID = json.board_id;
-							boardWriteDatas.wrap.hide();
+							const boardID = json.data.board_id;
+							dom.wrap.reset();
+							dom.wrap.hide();
+							BoardException.print("작성 완료!");
 							BoardData.load.boardContent( boardID );
-							
+							BoardData.load.boardComment( boardID );
 							// 만들어야함
+						}
+						
+						var requestFail = function(json){
+							dom.submit.setClickEvent("clickWrite");
+							BoardException.printError(json);
 						}
 						var param = {
 							type:"POST",
 							target: "BoardAddAction",
 							data: boardWriteDatas.wrap.getDatas(),
+							
 							success: requestSuccess,
 						}
-						console.log(param);
 						AjaxRequest(param);
+					},
+					clickModify: function(event){
+						
+					}
+				},
+				setClickEvent : function(eventName){
+					let listener = this.events[eventName];
+					if( listener ) 
+					this.$obj.off("click").on("click", )
+				},
+			},
+	};
+	
+	var boardCmtDatas = {
+		wrap:{
+			$obj : $("#commentListWrap"),
+		},	
+		count:{
+			$obj : $("#commentListWrap .text_count"),
+			set : function(count){
+				this.$obj.text(count);
+			},
+			plus : function(count){
+				this.$obj.text((i,value) => parseInt(value) + 1);
+			}
+		},
+		ul:{
+			$obj : $("#commentListContainer"),
+			unshift : function(data){
+				let $li = boardCmtDatas.li.get(data).hide();
+				this.$obj.prepend($li);
+				$li.slideDown();
+			},
+			add : function(data){
+				console.log(data);
+				let $li = boardCmtDatas.li.get(data);
+				this.$obj.append($li);
+			},
+			reset : function(){
+				this.$obj.html("");
+			},
+			addAll : function(list){
+				list.forEach(data => this.add(data));
+				
+			}
+		},	
+		li:{
+			$obj : $("#commentWriteWrap .item_comment"),
+			get : function(data){
+				return  BlindListDOM.listDatas.comment.get(data);
+			}
+		}
+			
+	}
+	var boardCmtWriteDatas = {
+			wrap : {
+				$obj : $("#commentWriteWrap"),
+				getReplyDataSend: function(){
+					let dom = boardCmtWriteDatas;
+					return {
+						reply_content : dom.content.get(),
+						board_id : BoardData.board.board_id, 
+						user_name : dom.name.get(),
+						user_pwd : dom.pwd.get(),
+					}
+				},
+				getReplyDataPrepend: function(){
+					let dom = boardCmtWriteDatas;
+					return {
+						reply_content : dom.content.get(),
+						reply_date : new Date().toLocaleString(),
+						reply_user_name : dom.name.get(),
+					}
+				},
+				isFilledInput: function(){
+					let dom = boardCmtWriteDatas;
+					let valueList = [dom.name.get(), dom.pwd.get(), dom.content.get()];
+					return valueList.every(v => v.length != 0 );
+				},
+				events: {
+					load : function(e){
+						let dom = boardCmtWriteDatas;
+						// 로그인 되어있을 시 이름과 비밀번호 입력
+						if(userManage.isLogined()){
+							let user = userManage.getUser();
+							dom.name.set( user.name );
+							dom.pwd.set( user.pwd );
+						}
 					}
 				}
-			}
+			},
+			name : {
+				$obj : $("#commentWriteWrap .inp_name"),
+				get : function(){ return this.$obj.val() },
+				set : function( value ){ return this.$obj.val( value ) },
+			},
+			pwd : {
+				$obj : $("#commentWriteWrap .inp_password"), 
+				get : function(){ return this.$obj.val() },
+				set : function( value ){ return this.$obj.val( value ) },
+			},
+			content : {
+				$obj : $("#commentWriteWrap .inp_descript"), 
+				get : function(){ return this.$obj.val() },
+				reset : function(){ this.$obj.val("") }
+			},
+			submit : {
+				$obj : $(".btn_submit"),
+				events : {
+					click : function(){
+						let dom = boardCmtWriteDatas;
+						if( !dom.wrap.isFilledInput() ){
+							BoardException.print("덧글을 작성하기 위해 빈칸을 모두 써주세요.","fa-pencil");
+							return false;
+						}
+						
+						let data = dom.wrap.getReplyDataSend();
+						dom.submit.write(data);
+					},
+				},
+				write : function(data){
+					userManage.simpleLogin(data.user_name,data.user_pwd);
+					let requestSuccess = function(json){
+						let unshiftData = boardCmtWriteDatas.wrap.getReplyDataPrepend();
+						boardCmtDatas.ul.unshift( unshiftData );
+						boardCmtWriteDatas.content.reset();
+					}
+					
+					let param = {
+							type: "POST",
+							target: "ReplyAddAction",
+							data : data,
+							success : requestSuccess
+					}
+					AjaxRequest(param);
+					
+				}
+			},
 	}
-	
 	var rtn = {
 		init : function(){
 			EventController.datasInit( boardDatas );
 			EventController.datasInit( boardWriteDatas );
+			EventController.datasInit( boardCmtDatas );
+			EventController.datasInit( boardCmtWriteDatas );
+			
 		},
 		reload : {
 			content :function(data){
 				boardDatas.wrap.set(data);
+			},
+			comment: function(data){
+				boardCmtDatas.ul.reset();
+				boardCmtDatas.ul.addAll(data.list);
+				boardCmtDatas.count.set(data.list.length);
 			}
 		},
-		boardWriteDatas: boardWriteDatas
+		boardWriteDatas: boardWriteDatas,
+		boardCmtWriteDatas : boardCmtWriteDatas,
 	}
 	return rtn;
 })();
@@ -555,7 +790,7 @@ var BlindListDOM = (function(){
 			category : {
 				$obj : $("#blindList .item_category.cloneable"),
 				get : function(info, depth){
-					let $obj = util.getClone( listDatas.category.$obj.clone() );
+					let $obj = util.getClone( this.$obj );
 					
 					$obj.data("category_id",  info.category_id );
 					$obj.find(".text_title").text( info.category_name );
@@ -575,13 +810,20 @@ var BlindListDOM = (function(){
 				}
 			},
 			comment : {
-				$obj : $("#blindList .item_comment.cloneable")
+				$obj : $("#blindList .item_comment.cloneable"),
+				get : function(data){
+					let $obj = util.getClone( this.$obj );
+					$obj.find(".text_name").text(data.reply_user_name);
+					$obj.find(".text_date").text(data.reply_date);
+					$obj.find(".text_descript").text(data.reply_content);
+					
+					return $obj;
+				}
 			},
 			board : {
 				$obj : $("#blindList .item_board.cloneable"),
 				get : function(data){
-					console.log(data)
-					let $obj = util.getClone( this.$obj.clone() );
+					let $obj = util.getClone( this.$obj );
 					
 					$obj.data("board_id",data.board_id);
 					$obj.find(".text_title").text( data.board_title );
@@ -652,7 +894,7 @@ var userManage = (function(){
 	
 	var exception = {
 		loginFail : function(){
-			window.BoardException.globalMessage("로그인에 실패했습니다. 패스워드를 확인해주세요.");
+			window.BoardException.print("로그인에 실패했습니다. 패스워드를 확인해주세요.");
 		},
 		
 	}
@@ -678,6 +920,13 @@ var userManage = (function(){
 			};
 			AjaxRequest(param);
 		},
+		simpleLogin:function(name,pwd){
+			if( !this.isLogined() || this.getUser().name != name || this.getUser().pwd != pwd){
+				this.login(name,pwd);
+				return true;
+			}
+			return false;
+		},
 		isLogined: function(){
 			return localStorage.getItem("user_name") != null ;
 		},
@@ -690,6 +939,9 @@ var userManage = (function(){
 		},
 		isWriteable : function(){
 			return localStorage.getItem("user_permission_write") === "true";
+		},
+		isRemoveable : function(){
+			return localStorage.getItem("user_permission_remove") === "true";
 		}
 	}
 })();

@@ -1,19 +1,16 @@
 package banip.bean;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.json.simple.JSONObject;
 
+import banip.data.StatusCode;
 import banip.query.SQLQuery;
+import banip.util.BoardJSON;
 /**
  * 비지니스 로직을 보다 효율적으로 수행하기 위해
  * 기존 자바빈에 DBMS용 update, delete같은 쿼리를 뽑아내기 위한 메서드를 추가한 추상 클래스.
@@ -62,16 +59,48 @@ public abstract class SQLBean {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public JSONObject getJSON( Iterator<String> ignoreList ) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+	public JSONObject getJSON( Iterator<String> ignoreList ) {
 		JSONObject json = new JSONObject();
 		Iterator<String> listIter = getFieldNameList( ignoreList ).iterator();
-		while(listIter.hasNext()) {
-			String fieldName = listIter.next();
-			json.put( fieldName.toLowerCase(), getFieldValue(fieldName) );
-		 }
+		try {
+			while(listIter.hasNext()) {
+				String fieldName = listIter.next();
+				json.put( fieldName.toLowerCase(), getFieldValue(fieldName) );
+			 }
+		} catch (Exception ee){
+			ee.printStackTrace();
+			return null;
+		}
+		
 		return json;
 	}
 	
+	public JSONObject getJSON( )  {
+		return getJSON( new ArrayList<String>().iterator() );
+	}
+
+	
+	public BoardJSON getBoardJSON( Iterator<String> ignoreList ) {
+		BoardJSON json = new BoardJSON( StatusCode.STATUS_SUCCESS);
+		BoardJSON errorJSON = new BoardJSON( StatusCode.STATUS_SERVER);
+		Iterator<String> listIter = getFieldNameList( ignoreList ).iterator();
+		
+		try {
+			while(listIter.hasNext()) {
+				String fieldName = listIter.next();
+				json.putData( fieldName.toLowerCase(), getFieldValue(fieldName) );
+			 }
+		} catch (Exception ee) {
+			ee.printStackTrace();
+			return errorJSON;
+		}
+		
+		return json;
+	}
+	
+	public BoardJSON getBoardJSON( ) {
+		return getBoardJSON( new ArrayList<String>().iterator() );
+	}
 	@SuppressWarnings("deprecation")
 	private Object getFieldValue(String fieldName) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
 		// TODO Auto-generated method stub
@@ -86,9 +115,6 @@ public abstract class SQLBean {
 
 	}
 
-	public JSONObject getJSON(  ) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-		return getJSON( new ArrayList<String>().iterator() );
-	}
 
 	@SuppressWarnings("deprecation")
 	protected String toLocalString(Timestamp date) {
