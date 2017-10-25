@@ -1,4 +1,4 @@
-:root {
+ :root {
 	--color-back : #111116;
 	--color-border : black;
 	--color-prime : hsl(340,100%,54%);
@@ -10,7 +10,7 @@
 	--color-transparent : rgba(255,255,255,0);
 
 }
-
+ 
 * {
  font-family: 'Spoqa Han Sans', 'Spoqa Han Sans JP', 'Sans-serif'; 
  font-weight:200;
@@ -363,6 +363,24 @@ hr{
 }
 
 #contentHeader{
+	position:relative;
+}
+
+#contentHeader .area_icon_list{
+	position:absolute;
+	top:1%;
+	right:1%;
+	padding: 1px 4px;
+}
+
+#contentHeader .area_icon_list > .area_icon{
+	padding:2px 2px;
+	font-size:1.2em;
+}
+
+#contentHeader .area_icon_list > .area_icon:hover{
+	transition: color 0.2s;
+	color: var(--color-prime);
 }
 
 #contentHeader .text_category{

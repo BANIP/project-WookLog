@@ -487,10 +487,20 @@ var BoardContentDOM = (function(){
 			}
 		},
 		removeIcon : {
-			
+			$obj : $("#contentHeader .area_icon_remove"),
+			events : {
+				click: function(event){
+
+				}
+			}
 		},
 		modifyIcon : {
-			
+			$obj : $("#contentHeader .area_icon_modify"),
+			events : {
+				click: function(event){
+					
+				}
+			}
 		}
 		
 	}
@@ -672,6 +682,9 @@ var BoardContentDOM = (function(){
 			$obj : $("#commentWriteWrap .item_comment"),
 			get : function(data){
 				return  BlindListDOM.listDatas.comment.get(data);
+			},
+			isModifiable : fucntion($li){
+				$li.find(".text_name").text == userManage.getUser().name;
 			}
 		}
 			
