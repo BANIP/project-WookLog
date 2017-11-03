@@ -986,7 +986,28 @@ var etcDOM = (function () {
 			init: function (category) {
 				this.isInit = true;
 				const dom = boardWriteDatas;
-				const $option = dom.categoryOption.get(category.bean
+				const $option = dom.categoryOption.get(category.info);
+					this.addOption($option);
+	
+					// 자식요소 재귀로 추가
+					if (category.child && category.child.length != 0) {
+						category.child.forEach(child => this.init(child));
+					}
+	
+	
+				},
+				addOption: function ($obj) {
+					this.$obj.append($obj);
+				},
+				setThisCategory: function () {
+					this.$obj.find("oprtion").each(function () {
+					})
+				},
+				select : function( categoryName ){
+					this.$obj.val(categoryName).attr("selected","selected");
+				},
+			},
+		categoryOption: {
 			$obj: $("#boardWriteWrap .board_category option"),
 			get: function (info) {
 				let $option = $("<option></option>");
