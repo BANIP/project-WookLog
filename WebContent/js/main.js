@@ -447,7 +447,35 @@ var BoardListDOM = (function () {
 			 * 카테고리 클릭이벤트를 설정함
 			 */
 			addCategory: function (data, depth) {
-				if(data.bean
+				let $ul = categoryDatas.ul.$obj;
+				let category = new listTemplet.CategoryList();
+
+				category.setBean( data.info ).get(data.info, depth);
+				$ul.append($obj);
+				
+				data.child.forEach(child => {
+					this.addCategory(child, depth + 1)
+				})
+			},
+			reset: function () { this.$obj.html(""); }
+		},
+		wrap: {
+			$obj: $("#categoryWrap"),
+			isOpen: function () {
+				return this.$obj.css("display") !== "none";
+			},
+			show: function () {
+				headerDatas.wrap.setBright();
+				this.$obj.slideDown();
+			},
+			hide: function () {
+				headerDatas.wrap.setDark();
+				this.$obj.slideUp();
+			}
+		}
+	}
+
+	var rtn = {
 		init: function () {
 			EventController.defineAll(headerDatas);
 			EventController.defineAll(boardListDatas);
@@ -798,6 +826,11 @@ var listTemplet = (function(){
 	});
 	
 	let CategoryList = (function(){
+		let clickEventListener = function(event){
+			let categoryID = event.target.bean.category_id;
+			BoardData.load.boardList( categoryID , 1);
+		};
+
 		let main = getChildClass(HTMLList);
 		main.prototype.$cloneDOMElement = $("#blindList .item_category.cloneable");
 
@@ -814,6 +847,10 @@ var listTemplet = (function(){
 			$obj.data("id", bean.category_id);
 
 			return this;
+		}
+
+		main.prototype.initEvent = function(){
+			this.$domElement.click( clickEventListener );
 		}
 
 		main.prototype.setDepth = function(depth){
