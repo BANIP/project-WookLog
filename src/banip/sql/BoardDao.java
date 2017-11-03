@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 import banip.bean.*;
 import banip.data.User;
-import banip.query.*;
+import banip.sql.query.*;
 import banip.util.CategoryTree;
 public class BoardDao extends SQLDao{
 
@@ -35,11 +35,7 @@ public class BoardDao extends SQLDao{
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			if(rs.next()){
-				bean.setCATEGORY_ID( rs.getInt(1) ); 
-				bean.setCATEGORY_NAME( rs.getString(2) ); 
-				bean.setCATEGORY_PREV_ID( rs.getInt(3) ); 
-				bean.setCATEGORY_PREV_NAME( rs.getString(4) ); 
-				bean.setCATEGORY_BOARD_COUNT( rs.getInt(5) );
+				bean.setFieldAll(rs);
 			} else {
 				return null;
 			}
@@ -59,23 +55,16 @@ public class BoardDao extends SQLDao{
 	 * @param limit 가져올 글의 최대한도
 	 * @return 보드빈의 리스트
 	 */
-	public ArrayList<BoardBean> getBoardList(int categoryID,int startIndex, int limit){
+	public ArrayList<BoardBean> getBoardList(int categoryID,int offset, int limit){
 		ArrayList<BoardBean> beanList = new ArrayList<BoardBean>();
 		BoardQuery queryList = (BoardQuery) new BoardBean().getQuery();
-		String query = queryList.getSelectListQuery(categoryID, startIndex, limit);
+		String query = queryList.getSelectListQuery(categoryID, offset, limit);
 		try {
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			while(rs.next()){
 				BoardBean bean = new BoardBean();
-				bean.setBOARD_ID( rs.getInt(1) );
-				bean.setBOARD_CATEGORY_NAME( rs.getString(2) );
-				bean.setBOARD_HIT( rs.getInt(3) );
-				bean.setBOARD_LIKE( rs.getInt(4) );
-				bean.setBOARD_USER_NAME( rs.getString(5) );
-				bean.setBOARD_TITLE( rs.getString(6) );
-				bean.setBOARD_DATE_CREATE( rs.getTimestamp(7) );
-				bean.setBOARD_REPLY_COUNT( rs.getInt(8) );
+				bean.setFieldAll(rs);
 				beanList.add(bean);
 			}
 			
@@ -102,17 +91,8 @@ public class BoardDao extends SQLDao{
 			rs = pstmt.executeQuery();
 
 			if(rs.next()){
-				bean.setBOARD_ID( rs.getInt(1) );
-				bean.setBOARD_CATEGORY_ID( rs.getInt(2) );
-				bean.setBOARD_HIT( rs.getInt(3) );
-				bean.setBOARD_LIKE( rs.getInt(4) );
-				bean.setBOARD_CATEGORY_NAME( rs.getString(5) );
-				bean.setBOARD_USER_NAME( rs.getString(6) );
-				bean.setBOARD_TITLE( rs.getString(7) );
-				bean.setBOARD_CONTENT( rs.getString(8) );
-				bean.setBOARD_REPLY_COUNT( rs.getInt(9) );
-				bean.setBOARD_DATE_CREATE( rs.getTimestamp(10) );
-				bean.setBOARD_DATE_MODIFY( rs.getTimestamp(11) );
+				bean.setFieldAll(rs,1);
+
 				return bean;
 			}
 			
@@ -135,18 +115,16 @@ public class BoardDao extends SQLDao{
 	 * @param boardUserID 등록할 유저의 ID키
 	 * @return 등록된 게시글의 기본키, 등록실패시 -1
 	 */
-	public BoardWriteBean addBoard(BoardBean bean,User user){
-		BoardQuery queryList = (BoardQuery) bean.getQuery();
+	public BoardBean addBoard(BoardBean RequestBean,User user){
+		BoardQuery queryList = (BoardQuery) RequestBean.getQuery();
 		String query = queryList.getAddBoardQuery(user);
 		try{
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
-			BoardWriteBean writebean = new BoardWriteBean();
+			BoardBean bean = new BoardBean();
 			if(rs.next()){
-				writebean.setIS_SUCCESS( rs.getBoolean(1));
-				writebean.setHISTORY_ID( rs.getInt(2));
-				writebean.setBOARD_ID( rs.getInt(3));
-				return writebean;
+				bean.setFieldAll(rs);
+				return bean;
 			}
 			
 		} catch(SQLException ee){
@@ -163,20 +141,24 @@ public class BoardDao extends SQLDao{
 	 * @param bean 게시글의 빈 객체
 	 * @return 게시글이 수정됬는지 아닌지의 여부
 	 */
-	public boolean modifyBoard(BoardBean bean){
+	public BoardBean modifyBoard(BoardBean bean, User user){
 		BoardQuery queryList = (BoardQuery) bean.getQuery();
-		String query = queryList.getModifyBoardQuery();
+		String query = queryList.getModifyBoardQuery(user);
 		try{
 			pstmt = conn.prepareStatement(query);
-			int result = pstmt.executeUpdate();
-			if(result != 3) return false;
-			return true;
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				BoardBean returnBean = new BoardBean();
+				bean.setFieldAll(rs);
+				return returnBean;
+			}
 		} catch(SQLException ee){
 			printException(ee, query);
 		} finally{
 			close(false);
 		}
-		return false;
+		return null;
 	}
 	/**
 	 * 게시글의 삭제
@@ -301,13 +283,7 @@ public class BoardDao extends SQLDao{
 			rs = pstmt.executeQuery();
 			while(rs.next()){
 				ReplyBean bean = new ReplyBean();
-				bean.setREPLY_ID( rs.getInt(1) );
-				bean.setREPLY_BOARD_ID( rs.getInt(2) );
-				bean.setREPLY_USER_ID( rs.getInt(3) );
-				bean.setREPLY_USER_NAME( rs.getString(4) );
-				bean.setREPLY_DATE( rs.getTimestamp(5) );
-				bean.setREPLY_DATE_MODIFY( rs.getTimestamp(6) );
-				bean.setREPLY_CONTENT( rs.getString(7) );
+				bean.setFieldAll(rs);
 				beanArray.add(bean);
 			}
 		} catch(SQLException ee){
@@ -396,14 +372,7 @@ public class BoardDao extends SQLDao{
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
 			if(rs.next()){
-				bean.setCATEGORY_ID( rs.getInt(1) );
-				bean.setCATEGORY_NAME( rs.getString(2) );
-				bean.setCATEGORY_PREV_ID( rs.getInt(3) );
-				bean.setCATEGORY_PREV_NAME( rs.getString(4) );
-				bean.setCATEGORY_BOARD_COUNT( rs.getInt(5) );
-				bean.setCATEGORY_LIKE( rs.getInt(6) );
-				bean.setCATEGORY_HIT( rs.getInt(7) );
-				bean.setCATEGORY_UPDATE_DATE( rs.getTimestamp(8) );
+				bean.setFieldAll(rs);
 			}
 			
 		} catch(SQLException ee){
@@ -427,14 +396,7 @@ public class BoardDao extends SQLDao{
 			rs = pstmt.executeQuery();
 			while(rs.next()){
 				CategoryBean bean = new CategoryBean();
-				bean.setCATEGORY_ID( rs.getInt(1) );
-				bean.setCATEGORY_NAME( rs.getString(2) );
-				bean.setCATEGORY_PREV_ID( rs.getInt(3) );
-				bean.setCATEGORY_PREV_NAME( rs.getString(4) );
-				bean.setCATEGORY_BOARD_COUNT( rs.getInt(5) );
-				bean.setCATEGORY_LIKE( rs.getInt(6) );
-				bean.setCATEGORY_HIT( rs.getInt(7) );
-				bean.setCATEGORY_UPDATE_DATE( rs.getTimestamp(8) );
+				bean.setFieldAll(rs);
 				list.add(bean);
 			}
 			return list;
@@ -480,13 +442,7 @@ public class BoardDao extends SQLDao{
 			rs = pstmt.executeQuery();
 			if(rs.next()){
 				ReplyBean bean = new ReplyBean();
-				bean.setREPLY_ID( rs.getInt(1) );
-				bean.setREPLY_BOARD_ID( rs.getInt(2) );
-				bean.setREPLY_USER_ID( rs.getInt(3) );
-				bean.setREPLY_USER_NAME( rs.getString(4) );
-				bean.setREPLY_DATE( rs.getTimestamp(5) );
-				bean.setREPLY_DATE_MODIFY( rs.getTimestamp(6) );
-				bean.setREPLY_CONTENT( rs.getString(7) );
+				bean.setFieldAll(rs);
 				return bean;
 			}
 		} catch (SQLException ee){

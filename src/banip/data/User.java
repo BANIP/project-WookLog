@@ -75,6 +75,7 @@ public class User {
 	
 	/**
 	 * 아이디 생성
+	 * 아이디가 존재할 경우 false 반환
 	 */
 	public boolean register() {
 		UserDao userDao = new UserDao();

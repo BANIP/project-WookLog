@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
 import banip.action.ActionUser;
+import banip.bean.UserBean;
 import banip.data.StatusCode;
 import banip.sql.UserDao;
 import banip.util.BoardJSON;
@@ -50,24 +51,24 @@ public class UserAddAction extends ActionUser{
 	@Override
 	protected BoardJSON executeMain(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		boolean isSuccess = isSuccess(request);
-		return getResultJSON(isSuccess);
+		UserBean bean = addUser(request);
+		return getResultJSON(bean);
 	}
 
-	private BoardJSON getResultJSON(boolean isSuccess) {
+	private BoardJSON getResultJSON(UserBean bean) {
 		// TODO Auto-generated method stub
-		if (isSuccess) {
-			return new BoardJSON(StatusCode.STATUS_SUCCESS);
-		} else {
+		if (bean == null) {
 			return new BoardJSON(StatusCode.STATUS_SERVER);
+		} else {
+			return bean.getBoardJSON();
 		}
 	}
 
-	private boolean isSuccess(HttpServletRequest request) {
+	private UserBean addUser(HttpServletRequest request) {
 		UserDao userDao = new UserDao();
-		boolean isSuccess = userDao.addUser(super.getUser(request));
+		UserBean bean = userDao.addUser(super.getUser(request));
 		userDao.close(true);
-		return isSuccess;
+		return bean;
 	}
 	
 }

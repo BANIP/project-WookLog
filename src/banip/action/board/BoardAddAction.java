@@ -7,7 +7,6 @@ import banip.sql.BoardDao;
 import banip.action.ActionBoard;
 import banip.util.BoardJSON;
 import banip.bean.BoardBean;
-import banip.bean.BoardWriteBean;
 import banip.data.StatusCode;
 import banip.data.User;
 
@@ -94,17 +93,16 @@ public class BoardAddAction extends ActionBoard{
 		User user = super.getUser(request);
 		BoardBean bean = getBean(request);
 		
-		BoardWriteBean writebean = dao.addBoard(bean, user);
+		BoardBean WritedBean = dao.addBoard(bean, user);
 		dao.close(true);
-		return getResultJSON(writebean);
+		return getResultJSON(WritedBean);
 	}
 	
-	private BoardJSON getResultJSON(BoardWriteBean writebean) {
+	private BoardJSON getResultJSON(BoardBean bean) {
 		// TODO Auto-generated method stub
-		boolean isNotNull = writebean != null;
-		boolean isSuccess = writebean.isIS_SUCCESS() == true;
-		if(isNotNull && isSuccess) {
-			return writebean.getBoardJSON();
+		boolean isNotNull = bean != null;
+		if(isNotNull) {
+			return bean.getBoardJSON();
 		} else {
 			return new BoardJSON(StatusCode.STATUS_SERVER,"서버상의 오류로 글 작성에 실패했습니다!");
 		}

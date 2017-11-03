@@ -59,17 +59,17 @@ public class BoardListView extends ActionBoard{
 		return super.getInt(request, "category_id");
 	}
 	
-	private int getBoardListOffset(HttpServletRequest request) {
-		// TODO Auto-generated method stub
-		return super.getInt(request, "board_list_offset");
-	}
-
 	private boolean isBoardOffsetWrong(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		return getBoardListOffset(request) < 1;
+		return getBoardListOffset(request) < 0;
 	}
 
 	
+	private int getBoardListOffset(HttpServletRequest request) {
+		// TODO Auto-generated method stub
+		return  super.getInt(request, "board_list_offset");
+	}
+
 	private boolean isBoardListNull(int boardCount) {
 		// TODO Auto-generated method stub
 		return boardCount == 0;
@@ -77,13 +77,9 @@ public class BoardListView extends ActionBoard{
 
 	private boolean isBoardIndexOverflow(HttpServletRequest request,int boardCount) {
 		// TODO Auto-generated method stub
-		return getStartIndex(request) > boardCount;
+		return (getBoardListOffset(request) + 1) * LIMIT  > boardCount;
 	}
 
-
-	private int getStartIndex(HttpServletRequest request) {
-		return ( getBoardListOffset(request) - 1) * LIMIT + 1;
-	}
 	
 	/**
 	 * 게시글 갯수 획득
@@ -96,12 +92,12 @@ public class BoardListView extends ActionBoard{
 
 	@Override
 	protected BoardJSON executeMain(HttpServletRequest request) {
+			int offset = getBoardListOffset(request);
 			BoardJSON boardJSON = new BoardJSON();
 			BoardDao dao = new BoardDao();
-			int startIndex = getStartIndex(request);
 			int categoryID = getCategoryID(request);
 
-			ArrayList<BoardBean> beans = dao.getBoardList(categoryID  , startIndex, LIMIT);
+			ArrayList<BoardBean> beans = dao.getBoardList(categoryID  , offset, LIMIT);
 			boardJSON.putData("list", getListJSON(beans.iterator()) );
 			dao.close(true);
 			
@@ -113,15 +109,7 @@ public class BoardListView extends ActionBoard{
 		JSONArray array = new JSONArray();
 		while(beanIter.hasNext()) {
 			BoardBean bean = beanIter.next(); 
-			JSONObject json = new JSONObject();
-			json.put( "board_id", bean.getBOARD_ID());
-			json.put( "board_category_name", bean.getBOARD_CATEGORY_NAME());
-			json.put( "board_hit", bean.getBOARD_HIT());
-			json.put( "board_like", bean.getBOARD_LIKE());
-			json.put( "board_user_name", bean.getBOARD_USER_NAME());
-			json.put( "board_title", bean.getBOARD_TITLE());
-			json.put( "board_date_create", bean.getBOARD_DATE_CREATE());
-			json.put( "board_reply_count", bean.getBOARD_REPLY_COUNT());
+			JSONObject json = bean.getJSON(bean.getListIgnore());
 			array.add(json);
 		}
 		return array;

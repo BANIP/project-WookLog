@@ -1,15 +1,18 @@
 package banip.bean;
 
 import java.lang.reflect.Field;
-
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.json.simple.JSONObject;
 
+import banip.data.SQLField;
 import banip.data.StatusCode;
-import banip.query.SQLQuery;
+import banip.sql.query.SQLQuery;
 import banip.util.BoardJSON;
 /**
  * 비지니스 로직을 보다 효율적으로 수행하기 위해
@@ -28,6 +31,7 @@ public abstract class SQLBean {
 	public void printThisClassName() {
 		System.out.println(this.getClass().getName());
 	}
+	
 	public ArrayList<String> getFieldNameList(){
 		ArrayList<String> rtn = new ArrayList<String>();
 		Field[] fields = this.getClass().getDeclaredFields();
@@ -62,16 +66,14 @@ public abstract class SQLBean {
 	public JSONObject getJSON( Iterator<String> ignoreList ) {
 		JSONObject json = new JSONObject();
 		Iterator<String> listIter = getFieldNameList( ignoreList ).iterator();
-		try {
 			while(listIter.hasNext()) {
 				String fieldName = listIter.next();
-				json.put( fieldName.toLowerCase(), getFieldValue(fieldName) );
+				try {
+					json.put( fieldName.toLowerCase(), getFieldValue(fieldName) );
+				} catch (Exception ee){
+					json.put( fieldName.toLowerCase(), null );
+				}
 			 }
-		} catch (Exception ee){
-			ee.printStackTrace();
-			return null;
-		}
-		
 		return json;
 	}
 	
@@ -122,4 +124,44 @@ public abstract class SQLBean {
 		return date == null ? null : date.toLocaleString();
 	}
 	
+	
+	public void setFieldAll(ResultSet rs) throws SQLException {
+		// TODO Auto-generated method stub
+		setFieldAll(rs,1);
+	}
+	
+	public void setFieldAll(ResultSet rs,int startPosition) throws SQLException {
+		// TODO Auto-generated method stub
+		ResultSetMetaData metaData = rs.getMetaData();
+		int length = metaData.getColumnCount();
+		while(startPosition <= length) {
+			setField(rs,startPosition);
+			
+			startPosition++;
+		}
+	}
+	
+	private void setField(ResultSet rs, int position) throws SQLException {
+		// TODO Auto-generated method stub
+		ResultSetMetaData metaData = rs.getMetaData();
+		Object value = rs.getObject(position);
+		String ColumnName = metaData.getColumnName(position);
+		String sqlType = metaData.getColumnTypeName(position);
+		SQLField sqlField = new SQLField(sqlType, value);
+		if(sqlField.isNull()) return;
+		try {
+			this.getClass().getDeclaredField(ColumnName).set(this, sqlField.getValue() );
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println("resultset에서 bean의 필드값을 저장하는중 오류가 발생했습니다.");
+			System.out.println("클래스 => " + this.getClass().getName());
+			System.out.println("입력받은 SQL 타입 => " + sqlType);
+			System.out.println("변환되기전 타입 => " + value.getClass().getTypeName());
+			System.out.println("변환된 타입 => " + sqlField.getValue().getClass().getTypeName());
+			System.out.println("컬럼명 => " + ColumnName);
+			System.out.println("값 => " + value);
+			e.printStackTrace();
+		}
+		
+	}
 }

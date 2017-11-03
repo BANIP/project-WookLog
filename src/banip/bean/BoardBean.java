@@ -1,12 +1,15 @@
 package banip.bean;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 
-import banip.query.*;
+import banip.sql.query.*;
 
 public class BoardBean extends SQLBean{
 	
 	protected int BOARD_ID;
+	protected int BOARD_HISTORY_ID;
 	protected int BOARD_CATEGORY_ID;
 	protected int BOARD_HIT;
 	protected int BOARD_LIKE;
@@ -34,6 +37,12 @@ public class BoardBean extends SQLBean{
 	}
 	public void setBOARD_ID(int bOARD_ID) {
 		BOARD_ID = bOARD_ID;
+	}
+	public int getBOARD_HISTORY_ID() {
+		return BOARD_HISTORY_ID;
+	}
+	public void setBOARD_HISTORY_ID(int bOARD_HISTORY_ID) {
+		BOARD_HISTORY_ID = bOARD_HISTORY_ID;
 	}
 	public int getBOARD_CATEGORY_ID() {
 		return BOARD_CATEGORY_ID;
@@ -90,13 +99,14 @@ public class BoardBean extends SQLBean{
 		BOARD_DATE_MODIFY = bOARD_DATE_MODIFY;
 	}
 
-	public ArrayList<String> getListIgnore() {
+	public Iterator<String> getListIgnore() {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add("BOARD_CONTENT");
-		return list;
+		return list.iterator();
 		
 	}
 
-	
+
+
 	
 }

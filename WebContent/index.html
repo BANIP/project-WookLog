@@ -5,12 +5,14 @@
 	<meta content="width=device-width" name="viewport">
 	<title>hello, posting!</title>
 	<!--    <link href='https://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css' rel='stylesheet' type='text/css'> -->
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<link href=
+	"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+	rel="stylesheet">
 	<meta content="telephone=no" name="format-detection">
 	<link href="css/common.css" rel="stylesheet">
 	<link href="css/main-layout.css" rel="stylesheet">
 	<link href="css/main-outer.css" rel="stylesheet">
-</head>  
+</head>
 <body>
 	<div id="wrap">
 		<header id="header">
@@ -19,8 +21,7 @@
 		<div id="mainWrap">
 			<nav id="navWrap">
 				<header id="navHeader">
-				
-					<div class="flow" id="navHeaderDefault" >
+					<div class="flow" id="navHeaderDefault">
 						<div class="innercenter wrap">
 							<div class="area_icon area_icon_pageselect">
 								<i class="fa fa-reorder icon_pageselect"></i>
@@ -36,7 +37,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="flow hide innercenter" id="navHeaderSearch" >
+					<div class="flow hide innercenter" id="navHeaderSearch">
 						<div class="innercenter wrap">
 							<div class="area_icon area_icon_spinner blind">
 								<i class="fa fa-spinner fa-spin icon_spinner"></i>
@@ -45,39 +46,36 @@
 								<i class="fa fa-search icon_search"></i>
 							</div>
 							<div class="area_search">
-								<input class="inp_search inp" type="text" placeholder="검색어를 입력해주세요!">
+								<input class="inp_search inp" placeholder="검색어를 입력해주세요!" type="text">
 							</div>
 							<div class="area_icon area_icon_close">
-							<i class="fa fa-times-circle-o icon_close"></i>
-						</div>
+								<i class="fa fa-times-circle-o icon_close"></i>
+							</div>
 						</div>
 					</div>
 					<div class="clearfix"></div>
-
 				</header>
-				<nav id="categoryWrap"  data-isopen=false>
-					<ul class="area_listing" id="categoryContent">
-				</ul>
+				<nav data-isopen="false" id="categoryWrap">
+					<ul class="area_listing" id="categoryContent"></ul>
 				</nav>
-					<article id="navContainer">
-						<ul class="area_listing" id="navContent"></ul>
-						<div class="wrap_alert hide">
-							<div class="area_alert innercenter ">
-										<div class="area_icon_normal">
-											<i class="fa fa-times-circle-o"></i>
-										</div>
-										<div class="area_text">
-											<span class="text_message"> 서버에 연결할 수 없습니다. </span>
-										</div>
+				<article id="navContainer">
+					<ul class="area_listing" id="navContent"></ul>
+					<div class="wrap_alert hide">
+						<div class="area_alert innercenter">
+							<div class="area_icon_normal">
+								<i class="fa fa-times-circle-o"></i>
+							</div>
+							<div class="area_text">
+								<span class="text_message">서버에 연결할 수 없습니다.</span>
 							</div>
 						</div>
-					</article>
+					</div>
+				</article>
 			</nav>
-
 			<article id="contentWrap">
 				<section id="contentContainer">
 					<header id="contentHeader">
-						<div class="area_icon_list"> 
+						<div class="right_icon_list">
 							<div class="area_icon area_icon_remove">
 								<span class="fa fa-trash-o"></span>
 							</div>
@@ -92,7 +90,9 @@
 							</div>
 						</div>
 						<div class="area_hit">
-							<i class="fa fa-line-chart"></i> <span class="text_hit">0</span> <span class="inp_div"></span> <i class="fa fa-heart-o text_prime"></i> <span class="text_like">0</span>
+							<i class="fa fa-line-chart"></i> <span class="text_hit">0</span>
+							<span class="inp_div"></span> <i class="fa fa-heart-o text_prime"></i>
+							<span class="text_like">0</span>
 						</div>
 						<div class="area_date">
 							<p>작성 <span class="text_date_created">0</span></p>
@@ -101,27 +101,27 @@
 					</header>
 					<hr>
 					<div id="contentBody">
-						java.io 패키지는 기존의 파일이나 폴더에 대한 제어를 하는데 사용하는 파일 클래스를 제공한다. 파일을 나타내는 객체를 생성하려면 다음과 같은 file 클래스의 생성자 함수를
+						java.io 패키지는 기존의 파일이나 폴더에 대한 제어를 하는데 사용하는 파일 클래스를 제공한다. 파일을 나타내는 객체를
+						생성하려면 다음과 같은 file 클래스의 생성자 함수를
 					</div>
 					<hr>
 				</section>
 				<section id="commentWrap">
 					<div id="commentWriteWrap">
-						<form id="commentWriteContainer">
+						<form id="commentWriteContainer" name="commentWriteContainer">
 							<div class="item_inner_left area_icon innercenter">
-								<span class="fa fa-pencil"> </span>
+								<span class="fa fa-pencil"></span>
 							</div>
 							<div class="item_inner_right">
 								<div class="area_user area_inp">
-									<input class="inp_name inp" placeholder="이름" type="text" /> 
-									<input class="inp_password inp" placeholder="비밀번호" type="password" /> 
+									<input class="inp_name inp" placeholder="이름" type="text">
+									<input class="inp_password inp" placeholder="비밀번호" type="password">
 								</div>
 								<div class="area_content area_inp">
-									<input class="inp_descript inp" placeholder="공개 댓글 추가..." type="text" /> 
-									<button type="button" class="btn_submit">입력</button>
+									<input class="inp_descript inp" placeholder="공개 댓글 추가..." type="text">
+									<button class="btn_submit" type="button">입력</button>
 								</div>
 							</div>
-
 						</form>
 						<ul class="area_listing" id="commentContent"></ul>
 					</div>
@@ -129,65 +129,64 @@
 						<header id="CommentHeader">
 							댓글[<span class="text_count"></span>]
 						</header>
-						<ul id="commentListContainer">
-
-						</ul>
+						<ul id="commentListContainer"></ul>
 					</div>
-
 				</section>
 			</article>
 		</div>
 	</div>
-	<div id="fadeIn"  class="hide">
-	</div>
-	<div id="boardWriteWrap" class="fixedcenter hide">
-		<form id="boardWriteContainer" method="POST">	
-		    <header class="area_input area_title">
-		          <div class="area_close area_icon innercenter">  <i class="fa fa-times"></i> </div>
-		        <input type="text" class="inp_title" placeholder="제목" name="board_title"/>
-		    </header>
-		    <article class="area_input area_descript">
-		       <textarea class="inp_descript" name="board_content" placeholder="내용"></textarea>
-		    </article>
-		    <footer class="area_footer">
-		        <div class="area_category">
-		          <select class="board_category"></select>
-		        </div>
-		        <div class="area_boardwrite">
-		          <button type="button" class="btn_boardwrite"> 작성 </button>
-		        </div>
-		    </footer>
+	<div class="hide" id="fadeIn"></div>
+	<div class="fixedcenter hide" id="boardWriteWrap">
+		<form id="boardWriteContainer" method="post" name="boardWriteContainer">
+			<header class="area_input area_title">
+				<div class="area_close area_icon innercenter">
+					<i class="fa fa-times"></i>
+				</div><input class="inp_title" name="board_title" placeholder="제목" type=
+				"text">
+			</header>
+			<article class="area_input area_descript">
+				<textarea class="inp_descript" name="board_content" placeholder=
+				"내용"></textarea>
+			</article>
+			<footer class="area_footer">
+				<div class="area_category">
+					<select class="board_category">
+					</select>
+				</div>
+				<div class="area_boardwrite">
+					<button class="btn_boardwrite" type="button">작성</button>
+				</div>
+			</footer>
 		</form>
 	</div>
-	<div id="confirmWrap" class="fixedcenter hide">
+	<div class="fixedcenter hide" id="confirmWrap">
 		<header id="confirmHeader"></header>
-		<article id="confirmContent" class="innercenter">
+		<article class="innercenter" id="confirmContent">
 			<div class="area_content innerrowcenter">
 				<div class="area_icon_normal">
 					<span class="fa fa-exclamation-triangle"></span>
 				</div>
 				<div class="area_text area_message">
-					<span class="text_message"> 메세지가 들어갈 칸 </span>
+					<span class="text_message">메세지가 들어갈 칸</span>
 				</div>
 			</div>
 			<div class="area_btn_list innerrowcenter">
 				<div class="area_btn area_btn_ok">
-					<button class="btn_ok"> 확인 </button>
+					<button class="btn_ok">확인</button>
 				</div>
 				<div class="area_btn area_btn_cancel">
-					<button class="btn_cancel"> 취소 </button>
+					<button class="btn_cancel">취소</button>
 				</div>
-
 			</div>
 		</article>
 	</div>
-	<div id="alertWrap" class="fixedcenter hide">
-		<div id="alertContainer" class="innercenter">
+	<div class="fixedcenter hide" id="alertWrap">
+		<div class="innercenter" id="alertContainer">
 			<div class="area_icon_normal">
 				<i class="fa fa-times-circle-o"></i>
 			</div>
 			<div class="area_text">
-				<span class="text_message"> 서버에 연결할 수 없습니다. </span>
+				<span class="text_message">서버에 연결할 수 없습니다.</span>
 			</div>
 		</div>
 	</div>
@@ -201,7 +200,9 @@
 					<div class="item_inner_bottom">
 						<div class="item_inner_right right">
 							<div class="area_hit">
-								<i class="fa fa-line-chart"></i> <span class="text_hit">0</span> <span class="inp_div"></span> <i class="fa fa-heart-o text_prime"></i> <span class="text_like">0</span>
+								<i class="fa fa-line-chart"></i> <span class="text_hit">0</span>
+								<span class="inp_div"></span> <i class="fa fa-heart-o text_prime"></i>
+								<span class="text_like">0</span>
 							</div>
 						</div>
 						<div class="item_inner_left">
@@ -210,7 +211,7 @@
 							</div>
 						</div>
 					</div>
-						<hr>
+					<hr>
 				</div>
 			</li>
 			<li class="item_category cloneable">
@@ -220,43 +221,57 @@
 						<i class="fa fa-pencil"></i>
 					</div>
 					<div class="area_text">
-						<span class="text_boardcount">10 </span>
+						<span class="text_boardcount">10</span>
 					</div>
-					
 				</div>
 				<div class="area_text area_title">
-					<span class="text_title"> ROOT</span>
+					<span class="text_title">ROOT</span>
 				</div>
 				<div class="inner_info">
 					<div class="area_viewcount">
-						<span class="text_hit"> <i class="fa fa-line-chart"></i> <span class="text_hitcount">10</span> </span> <span class="inp_div"></span>
-						<span class="text_like"> <i class="fa fa-heart-o text_prime"></i> <span class="text_likecount">10</span> </span>
+						<span class="text_hit"><i class="fa fa-line-chart"></i> <span class=
+						"text_hitcount">10</span></span> <span class="inp_div"></span>
+						<span class="text_like"><i class="fa fa-heart-o text_prime"></i>
+						<span class="text_likecount">10</span></span>
 					</div>
 					<div class="area_date">
-						<span class="text_lastupdate"> 2017-07-05 </span>
+						<span class="text_lastupdate">2017-07-05</span>
 					</div>
 				</div>
 			</li>
-				<li class="item_comment cloneable">
-					<div class="item_wrap">
-						<div class="item_inner_top">
-							<div class="area_text area_name">
-								<span class="text_name"> </span>
-							</div>
-							<div class="area_date">
-								<span class="text_date"> </span>
-							</div>
+			<li class="item_comment cloneable">
+				<div class="item_wrap">
+					<div class="item_inner_top">
+						<div class="area_text area_name">
+							<span class="text_name"></span>
 						</div>
-						<div class="item_inner_bottom area_descript">
-							<span class="text_descript"> </span>
+						<div class="area_date">
+							<span class="text_date"></span>
+						</div>
+						<div class="right_icon_list">
+							<div class="area_icon area_icon_remove">
+								<span class="fa fa-trash-o"></span>
+							</div>
+							
+							<div class="area_icon area_icon_modify">
+								<span class="fa fa-pencil"></span>
+							</div>
 						</div>
 					</div>
-				</li>
+					<div class="item_inner_bottom area_descript">
+						<span class="text_descript"></span>
+					</div>
+				</div>
+			</li>
 		</ul>
 	</div>
-	<script src="js/jquery.min.js"></script> 
-	<script src="js/common.js"></script> 
-	<script src="js/main.js"></script> 
-	<script src="js/init.js"></script> 
+	<script src="js/jquery.min.js">
+	</script> 
+	<script src="js/common.js">
+	</script> 
+	<script src="js/main.js">
+	</script> 
+	<script src="js/init.js">
+	</script>
 </body>
 </html>

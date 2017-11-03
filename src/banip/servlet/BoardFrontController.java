@@ -52,7 +52,6 @@ public class BoardFrontController extends HttpServlet {
 	private Action getAction(String command) {
 		Action action;
 		try {
-			System.out.println(command);
 			action = (Action) Class.forName(command).newInstance();
 		}  catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block

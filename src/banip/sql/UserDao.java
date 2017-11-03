@@ -4,9 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import banip.bean.*;
-import banip.query.*;
-
 import banip.data.User;
+import banip.sql.query.*;
 
 public class UserDao extends SQLDao{
 	protected static final String id = "BANIP";
@@ -42,18 +41,22 @@ public class UserDao extends SQLDao{
 	 * @param userPwd 사용자패스워드
 	 * @return
 	 */
-	public boolean addUser(User user){
+	public UserBean addUser(User user){
 		   String query = new UserQuery(null).getaddUserQuery(user);
 			try {
 				pstmt = conn.prepareStatement(query);
-				int result = pstmt.executeUpdate();
-				return result == 1 ? true : false;
+				rs = pstmt.executeQuery();
+				if(rs.next()) {
+					UserBean bean = new UserBean();
+					bean.setFieldAll(rs);
+					return bean;
+				}
 			} catch(SQLException ee){
 				printException(ee, query);
 			} finally{
 				close(false);
 			}
-			return false;
+			return null;
 	}
 	
 	/**
@@ -67,18 +70,10 @@ public class UserDao extends SQLDao{
 		   UserBean bean = null;
 			try {
 				pstmt = conn.prepareStatement(query);
-				ResultSet result = pstmt.executeQuery();
-				if(result.next()) {
+				rs = pstmt.executeQuery();
+				if(rs.next()) {
 					bean = new UserBean();
-					bean.setUSER_ID( result.getInt(1) );
-					bean.setUSER_NAME( result.getString(2) );
-					bean.setUSER_PWD( result.getString(3) );
-					bean.setUSER_EMAIL( result.getString(4) );
-					bean.setUSER_DATE_CREATE( result.getTimestamp(5) );
-					bean.setUSER_DATE_LOGIN( result.getTimestamp(6) );
-					bean.setUSER_PERMISSION_WRITE( result.getBoolean(7) );
-					bean.setUSER_PERMISSION_COMMENT( result.getBoolean(8) );
-					bean.setUSER_PERMISSION_REMOVE( result.getBoolean(9) );
+					bean.setFieldAll(rs);
 				}
 			} catch(SQLException ee){
 				printException(ee, query);

@@ -1,6 +1,5 @@
 package banip.action.board;
 import java.util.Iterator;
-import java.sql.Date;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.*;
@@ -68,17 +67,7 @@ public class BoardCategoryView extends ActionBoard{
 	
 	@SuppressWarnings({ "unchecked" })
 	private JSONObject getCategoryJSON(CategoryBean bean) {
-		JSONObject json = new JSONObject();
-		json.put("category_id",					bean.getCATEGORY_ID());
-		json.put("category_name",				bean.getCATEGORY_NAME());
-		json.put("category_prev_id",			bean.getCATEGORY_PREV_ID());
-		json.put("category_prev_name",		bean.getCATEGORY_PREV_NAME());
-		json.put("category_board_count",	bean.getCATEGORY_BOARD_COUNT());
-		json.put("category_like",					bean.getCATEGORY_LIKE());
-		json.put("category_hit",				 	bean.getCATEGORY_HIT());
-		json.put("category_update_date",	bean.getCATEGORY_UPDATE_DATE() );
-		
-		return json;
+		return bean.getJSON();
 	}
 	
 	@SuppressWarnings("unchecked")

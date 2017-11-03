@@ -54,7 +54,6 @@ public class BoardViewDetail extends ActionBoard{
 		// TODO Auto-generated method stub
 		BoardDao dao = new BoardDao();
 		String userIP = request.getRemoteAddr();
-		System.out.println(super.getUser(request).getName() );
 		int userID = getUserID(request);
 		int boardID = super.getInt(request, "board_id");
 		dao.addHitBoard(userID, userIP, boardID);
@@ -70,19 +69,7 @@ public class BoardViewDetail extends ActionBoard{
 	private BoardJSON getBoardJSON(HttpServletRequest request) {
 		// TODO Auto-generated method stub
 		BoardBean bean = super.getBoardID(request).getBean();
-		BoardJSON json = new BoardJSON(StatusCode.STATUS_SUCCESS);
-		
-		json.putData("board_id",bean.getBOARD_ID());
-		json.putData("board_category_id",bean.getBOARD_CATEGORY_ID());
-		json.putData("board_hit",bean.getBOARD_HIT());
-		json.putData("board_like",bean.getBOARD_LIKE());
-		json.putData("board_category_name",bean.getBOARD_CATEGORY_NAME());
-		json.putData("board_user_name",bean.getBOARD_USER_NAME());
-		json.putData("board_title",bean.getBOARD_TITLE());
-		json.putData("board_content",bean.getBOARD_CONTENT());
-		json.putData("board_reply_count",bean.getBOARD_REPLY_COUNT());
-		json.putData("board_date_create",bean.getBOARD_DATE_CREATE());
-		json.putData("board_date_modify",bean.getBOARD_DATE_MODIFY());
+		BoardJSON json = bean.getBoardJSON();
 		return json;
 	}
 

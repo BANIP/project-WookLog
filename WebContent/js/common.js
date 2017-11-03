@@ -1,53 +1,151 @@
-var AjaxRequest = (function () {
+let debug = {
+		isdebug : true,
+		printSendParam : function(param){
+			if(this.isdebug) console.log("send : ",param);
+		},
+		printReceiveParam: function(param){
+			if(this.isdebug) console.log("receive : ",param);			
+		}
+}
+ 
+let parameterData = (function(){
+	let main = function(data){
+		if(typeof data == "undefined") this.data = {};
+		  else this.data = data;
+	}
+
+	main.prototype.get = function(){ return this.data };
+	
+	main.prototype.set = function(data){
+		this.data = data;
+		return this;
+	}
+
+	main.prototype.add = function(name, value){
+		this.data[name] = value;
+		return this;
+	}
+
+	main.prototype.addAll = function(dataList){
+		Object.assign( this.data, dataList );
+		return this;
+	}
+
+	main.prototype.addUser = function(){
+		if (userManage.isLogined()) {
+			let user = userManage.getUser();
+			param.data.user_name = user.name;
+			param.data.user_pwd = user.pwd;
+		}
+	}
+
+
+	return main;
+})();
+
+let RequestParameter = (function(){
+
+	let main = function(){
+		this.core = {};
+		this.core.data = new parameterData();
+		return this;
+	}
+
 	/**
+	 * ajax와 호환 가능한 파라미터를 얻음
+	 * @return {Object} $.ajax로 전송할 수 있는 객체
+	 */
+	main.prototype.getSendableParam = function () {
+		
+		let thisParam = this.getCore();
+
+		let ctx = this;
+		let requestSuccessListener = function (json) {
+			debug.printReceiveParam(json);
+			if (json.statuscode != 0) {
+				ctx.getCore().error(json);
+			} else {
+				ctx.getCore().success(json);
+			}
+		}
+		
+		checkNull( thisParam.type, "HTTP 프로토콜 타입이 입력되지 않았습니다.");
+		checkNull( thisParam.url, "통신 성공 콜백 함수가 정의되지 않았습니다.");
+
+		thisParam.error = thisParam.error || BoardException.printError;
+		
+		return {
+			type : thisParam.type,
+			url : thisParam.url,
+			success : requestSuccessListener,
+			error : thisParam.error,
+			dataType : "json",
+			data : this.getData().get(),
+		}
+	}
+
+	/** 
 	 * 값이 undefined인지 아닌지 확인
-	 * @param  {Object}  value 확인할 값
+	 * @param  {*}  value 확인할 값
 	 * @return {Boolean}       undefined일시 true 반환
 	 */
-	var isNull = function (value) {
+	let isNull = function (value) {
 		return typeof value == "undefined";
+	}
+
+	/**
+	 * 값이 Null이면 오류 출력
+	 * @param {*} target null의 여부를 확인할 값
+	 * @param {String} message null일시 출력되는 오류 메세지
+	 */
+	let checkNull = function(target,message){
+		if(isNull(target)) throw Error(message);
+	}
+
+	main.prototype.getCore = function(){
+		return this.core;
+	}
+
+	main.prototype.setTarget = function(target){
+		this.core.url = _getActionURL(target);
+		return this;
+	}
+
+	main.prototype.getData = function(){
+		return this.core.data;
 	}
 
 	/**
 	 * 액션객체의 클래스명을 통신 가능한 url로 변경
 	 * @param  {String} name 액션 객체의 클래스명
-	 * @return {String}      ajax로 통신하기 위한 url
+	 * @return {String}      통신 할 수 있는 url
 	 */
-	var getActionURL = function (name) {
+	var _getActionURL = function (name) {
 		return name + ".do";
 	}
 
-	/**
-	 * 간단한 파라미터를 $.ajax와 호환이 가능한 파라미터로 변경
-	 * @param 파라미터를 변환할 객체, type, target, data 속성 필요
-	 */
-	var getAjaxParam = function (param) {
-		param.url = getActionURL(param.target);
-		if (isNull(param.dataType)) param.dataType = "json";
-		if (isNull(param.error)) param.error = BoardException.printError;
-		param.defaultSuccess = param.success;
-		param.success = function (json) {
-			if (json.statuscode != 0) {
-				param.error(json);
-			} else {
-				param.defaultSuccess(json);
-			}
-		}
-
-		return param;
+	main.prototype.setType = function(type){
+		this.core.type = type;
+		return this;
+	}
+	main.prototype.addSuccessCallback = function(listener){
+		this.core.success = listener
+		return this;
+	}
+	main.prototype.addErrorCallback = function(listener){
+		this.core.error = listener
+		return this;
+	}
+	main.prototype.send = function(){
+		let param = this.getSendableParam();
+		debug.printSendParam( param );
+		$.ajax(param);
+		return this;
 	}
 
-	/**
-	 * ajax통신 실행
-	 */
-	var execute = function (currentParam) {
-		let ajaxParam = getAjaxParam(currentParam);
-		$.ajax(ajaxParam);
-	}
-
-
-	return execute;
+	return main;
 })();
+
 
 var EventController = (function () {
 
@@ -116,22 +214,10 @@ var userManage = (function () {
 
 	}
 
-	var localLogin = function (name) {
-		var requestSuccess = function (json) {
-			Object.keys(json.data.info).forEach(function (attr) {
-				localStorage.setItem(attr, json.data.info[attr]);
-			})
-			localStorage.setItem("user_pwd", tempUser.pwd);
-		}
-		var param = {
-			type: "GET",
-			target: "UserGetUserAction",
-			data: {
-				user_name: name
-			},
-			success: requestSuccess
-		}
-		AjaxRequest(param)
+	let saveLocalUserInfo = function(info){
+		info.user_name = tempUser.name
+		info.user_pwd = tempUser.pwd
+		localStorage.setItem("user",JSON.stringify(info));
 	}
 
 	var exception = {
@@ -143,24 +229,25 @@ var userManage = (function () {
 
 	return {
 		login: function (name, pwd) {
+
 			tempUser = { name: name, pwd: pwd };
+
 			var requestSuccess = function (json) {
-				if (json.data.is_login_success) {
-					localLogin(name);
-				} else {
-					exception.loginFail();
-				}
+				saveLocalUserInfo(json.data);
 			}
-			var param = {
-				type: "POST",
-				target: "UserAuthAction",
-				data: {
-					user_name: name,
-					user_pwd: pwd,
-				},
-				success: requestSuccess
-			};
-			AjaxRequest(param);
+			
+			let param = new RequestParameter();
+			
+			param.setType("POST")
+			.setTarget("UserAuthAction")
+			.addSuccessCallback(requestSuccess)
+			.addErrorCallback(exception.loginFail)
+			.getData()
+			  .add("user_name",name)
+			  .add("user_pwd",pwd);
+	
+			param.send();
+
 		},
 		simpleLogin: function (name, pwd) {
 			if (!this.isLogined() || this.getUser().name != name || this.getUser().pwd != pwd) {
@@ -170,20 +257,28 @@ var userManage = (function () {
 			return false;
 		},
 		isLogined: function () {
-			return localStorage.getItem("user_name") != null;
+			return this.getUser() != false;
 		},
 		getUser: function () {
+			let bean = this.getBean();
+
 			let info = {
-				name: localStorage.getItem("user_name"),
-				pwd: localStorage.getItem("user_pwd"),
+				name: bean.user_name,
+				pwd: bean.user_pwd,
 			};
-			return (info.name && info.pwd) ? info : false;
+
+			return (info.name && info.pwd) && info;
 		},
 		isWriteable: function () {
-			return localStorage.getItem("user_permission_write") === "true";
+			let bean = this.getBean();
+			return bean && bean.user_permission_write;
 		},
 		isRemoveable: function () {
-			return localStorage.getItem("user_permission_remove") === "true";
+			let bean = this.getBean();
+			return bean && bean.user_permission_remove;
+		},
+		getBean: function(){
+			return JSON.parse(localStorage.getItem("user"));
 		}
 	}
 })();
@@ -242,7 +337,6 @@ let methodTemplet = (function(){
 			let package = new Package();
 			package.addAll({
 				show: function(){ 
-					console.log(this); 
 					this.$obj.show(); 
 				},
 				hide: function(){ this.$obj.hide(); },				
@@ -266,4 +360,4 @@ let methodTemplet = (function(){
 			return package;
 		}
 	}
-})();
+})(); 

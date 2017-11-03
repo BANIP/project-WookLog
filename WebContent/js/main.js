@@ -1,3 +1,5 @@
+// 게시글, 덧글 처리중에 작성 한번 더 누를 시 예외뜨는 예외 처리
+
 var BoardException = (function () {
 
 	let messageDatas = {
@@ -16,7 +18,7 @@ var BoardException = (function () {
 			reset: function () {
 				this.$obj.removeClass().addClass("fa");
 			},
-
+ 
 		},
 		text: {
 			$obj: $("#alertWrap .area_text"),
@@ -74,90 +76,92 @@ var BoardData = (function () {
 		})
 	}
 
-	var addUserParam = function (param) {
-		if (userManage.isLogined()) {
-			let user = userManage.getUser();
-			param.data.user_name = user.name;
-			param.data.user_pwd = user.pwd;
-		}
-	}
-
 	let load = {
 		category: function (categoryID) {
-			var requestSuccess = function (json) {
+			let param = new RequestParameter();
+			
+			let requestSuccess = function (json) {
+				console.log(json)
 				externalCtx.category = json.data;
 				setCategorysParent(json.data);
 				BoardListDOM.reload.category(json.data);
 			};
-			var param = {
-				type: "GET",
-				target: "BoardCategoryView",
-				data: {
-					category_id: categoryID
-				},
-				success: requestSuccess,
-				error: function (e) { console.log(e) }
-			}
-			AjaxRequest(param);
+
+			param.setType("GET")
+				 .setTarget("BoardCategoryView")
+				 .addSuccessCallback(requestSuccess)
+				 .getData().add("category_id",categoryID);
+
+			param.send();
+
 		},
 		boardList: function (categoryID, listOffset) {
+			let param = new RequestParameter();
+
 			var requestSuccess = function (json) {
 				externalCtx.boardlist = json.data;
 				BoardListDOM.reload.boardList(json.data);
 			};
-			var param = {
-				type: "GET",
-				target: "BoardListView",
-				data: {
-					category_id: categoryID,
-					board_list_offset: listOffset,
-				},
-				success: requestSuccess,
-				error: BoardException.boardList
-			}
-			AjaxRequest(param);
+
+			param.setType("GET")
+				 .setTarget("BoardListView")
+				 .addSuccessCallback(requestSuccess)
+				 .addErrorCallback(BoardException.boardList)
+				 .getData()
+					 .add("category_id",categoryID)
+					 .add("board_list_offset",listOffset)
+
+			param.send(param);
 		},
 		boardContent: function (boardID) {
-			var requestSuccess = function (json) {
+			let param = new RequestParameter();
+
+			load.boardContent.requestSuccess = function (json) {
 				BoardData.board = json.data;
 				BoardContentDOM.reload.content(json.data);
 			};
-			var param = {
-				type: "GET",
-				target: "BoardViewDetail",
-				data: {
-					board_id: boardID,
-				},
-				success: requestSuccess,
-			}
-			AjaxRequest(param);
+
+			param.setType("GET")
+				 .setTarget("BoardViewDetail")
+				 .addSuccessCallback(load.boardContent.requestSuccess)
+				 .getData().add("board_id",boardID);
+
+
+			param.send(param);
 		},
 		boardComment: function (boardID) {
+			let param = new RequestParameter();
+
 			var requestSuccess = function (json) {
 				BoardData.comment = json.data;
 				BoardContentDOM.reload.comment(json.data);
 			};
-			var param = {
-				type: "GET",
-				target: "ReplyListView",
-				data: {
-					board_id: boardID,
-				},
-				success: requestSuccess,
-			};
-			AjaxRequest(param);
+
+			param.setType("GET")
+				 .setTarget("ReplyListView")
+				 .addSuccessCallback(requestSuccess)
+				 .getData().add("board_id",boardID);
+
+
+			param.send(param);
 		},
 		write : function(data){
+			let param = new RequestParameter();
 			let writedom = etcDOM.boardWriteDatas;
 
 			var requestSuccess = function (json) {
 				const boardID = json.data.board_id;
-				writedom.wrap.reset();
-				writedom.wrap.hide();
-				BoardException.print("작성 완료!","check-circle-o");
-				load.boardContent(boardID);
-				load.boardComment(boardID);
-				load.boardList(data.category_id);
+				let commentUL = BoardContentDOM.boardCmtDatas.ul
+				
+				writedom.wrap.destroy();
+				BoardException.print("작성 완료!","fa-check-circle-o");
+				commentUL.reset();
+				
+				//획득한 BoardBean 돔에 반영
+				BoardData.board = json.data;
+				BoardContentDOM.reload.content(json.data);
+				
+				load.boardList(json.data.board_category_id,1);
 			}
 
 			var requestError = function (json) {
@@ -165,17 +169,17 @@ var BoardData = (function () {
 				BoardException.printError(json);
 			}
 
-			var param = {
-				type: "POST",
-				target: "BoardAddAction",
-				data: data,
-				success: requestSuccess,
-				error:requestError
-			}
+ 
+			param.setType("POST")
+				 .setTarget("BoardAddAction")
+				 .addSuccessCallback(requestSuccess)
+				 .addErrorCallback(requestError)
+				 .getData().set(data);
 
-			AjaxRequest(param);
+			param.send();
 		},
 		commentwrite: function (data) {
+			let param = new RequestParameter();
 			let writedom = BoardContentDOM.boardCmtWriteDatas;
 			let listdom = BoardContentDOM.boardCmtDatas;
 			
@@ -189,15 +193,13 @@ var BoardData = (function () {
 				BoardException.printError(json);
 			}
 			
-			let param = {
-				type: "POST",
-				target: "ReplyAddAction",
-				data: data,
-				success: requestSuccess,
-				error:requestError,
-			}
-			AjaxRequest(param);
+			param.setType("POST")
+				.setTarget("ReplyAddAction")
+				.addSuccessCallback(requestSuccess)
+				.addErrorCallback(requestError)
+				.getData().set(data);
 
+			param.send();
 		},
 		modify : function(data){
 			let writedom = etcDOM.boardWriteDatas;
@@ -207,7 +209,7 @@ var BoardData = (function () {
 				writedom.wrap.reset();
 				writedom.wrap.hide();
 				BoardException.print("수정 완료!");
-				load.boardContent(boardID);
+				load.boardContent.requestSuccess(json);
 				load.boardComment(boardID);
 			}
 
@@ -216,31 +218,67 @@ var BoardData = (function () {
 				BoardException.printError(json);
 			}
 
-			var param = {
-				type: "POST",
-				target: "BoardModifyAction",
-				data: data,
-				success: requestSuccess,
-				error:requestError
-			}
+			param.setType("POST")
+				.setTarget("BoardModifyAction")
+				.addSuccessCallback(requestSuccess)
+				.addErrorCallback(requestError)
+				.getData().set(data);
 
-			AjaxRequest(param);
+			param.send();
+
+		},
+		modifyComment : function(data,$li){
+			let param = new RequestParameter();
 			
+			var requestSuccess = function (json) {
+				
+				$li.find(".text_descript").html( json.data.reply_content );
+				$li.find(".text_name").html( json.data.reply_user_name );
+				
+				BoardContentDOM.boardCmtDatas.li.setViewMode($li);
+				BoardException.print("수정 완료!");
+			}
+			
+			param.setType("POST")
+				.setTarget("ReplyModifyAction")
+				.addSuccessCallback(requestSuccess)
+				.getData().set(data).addUser();
+
+			param.send();
 		},
 		remove: function (boardID) {
-			let requestSuccess = function () {
+			let param = new RequestParameter();
+			let requestSuccess = function (json) {
 				// 작성해야함
+				let categoryID = BoardData.category.bean.category_id;
+				load.boardList(categoryID, 1);
+				load.boardContent(defaultIndex.board);
 			};
-			var param = {
-				type: "POST",
-				target: "BoardDeleteAction",
-				data: {
-					board_id: boardID,
-				},
-				success: requestSuccess,
+
+			param.setType("POST")
+				 .setTarget("BoardDeleteAction")
+				 .addSuccessCallback(requestSuccess)
+				 .getData().add("board_id",boardID)
+				.addUser();
+
+			param.send();
+
+		},
+		removeComment : function(reply_id,$li){
+			let param = new RequestParameter();
+			let requestSuccess = function (json) {
+				// 작성해야함
+				BoardContentDOM.boardCmtDatas.li.remove($li);
+				BoardException.print("삭제 완료!");
 			};
-			addUserParam(param);
-			AjaxRequest(param);
+
+			param.setType("POST")
+				 .setTarget("BoardDeleteAction")
+				 .addSuccessCallback(requestSuccess)
+				 .getData().add("reply_id",boardID).addUser();
+
+			param.send();
+
 		}
 
 	}
@@ -248,10 +286,10 @@ var BoardData = (function () {
 	return {
 		init: function () {
 			externalCtx = this;
-			this.load.category(defaultIndex.category);
-			this.load.boardList(defaultIndex.category, 1);
+			this.load.boardList(defaultIndex.category, 0);
 			this.load.boardContent(defaultIndex.board);
 			this.load.boardComment(defaultIndex.board);
+			this.load.category(defaultIndex.category);
 		},
 		load: load
 	}
@@ -271,22 +309,19 @@ var BoardListDOM = (function () {
 		},
 		ul: {
 			$obj: $("#navContent"),
-			addBoard: function (data) {
-				var $obj = BlindListDOM.listDatas.board.get(data);
-				$obj.on("click", boardListDatas.li.events._click);
-				this.$obj.append($obj);
+			add: function (boardBean) {
+				var boardList = new listTemplet.BoardList();
+				boardList.setByBean(boardBean);
+
+
+				this.$obj.append(boardList.domElement);
+			},
+			addAll: function(beanList){
+				beanList.forEach(function (boardBean) {
+					boardListDatas.ul.addBoard(boardBean);
+				})
 			},
 			reset: function () { this.$obj.html("") }
-		},
-		li: {
-			$obj: $(".board_item"),
-			events: {
-				_click: function (event) {
-					let boardID = $(this).data("board_id");
-					BoardData.load.boardContent(boardID);
-					BoardData.load.boardComment(boardID);
-				}
-			}
 		},
 		alert: {
 			$obj: $("#navContainer > .wrap_alert"),
@@ -412,40 +447,7 @@ var BoardListDOM = (function () {
 			 * 카테고리 클릭이벤트를 설정함
 			 */
 			addCategory: function (data, depth) {
-				let $obj = BlindListDOM.listDatas.category.get(data.info, depth);
-				$obj.on("click", categoryDatas.li.events._click);
-				categoryDatas.ul.$obj.append($obj);
-				data.child.forEach(child => {
-					this.addCategory(child, depth + 1)
-				})
-			},
-			reset: function () { this.$obj.html(""); }
-		},
-		wrap: {
-			$obj: $("#categoryWrap"),
-			isOpen: function () {
-				return this.$obj.css("display") !== "none";
-			},
-			show: function () {
-				headerDatas.wrap.setBright();
-				this.$obj.slideDown();
-			},
-			hide: function () {
-				headerDatas.wrap.setDark();
-				this.$obj.slideUp();
-			}
-		},
-		li: {
-			$obj: $("#categoryContent .item_category"),
-			events: {
-				_click: function (event) {
-					BoardData.load.boardList($(this).data("category_id"), 1);
-				}
-			}
-		}
-	}
-
-	var rtn = {
+				if(data.bean
 		init: function () {
 			EventController.defineAll(headerDatas);
 			EventController.defineAll(boardListDatas);
@@ -460,9 +462,8 @@ var BoardListDOM = (function () {
 				if (categoryDatas.wrap.isOpen()) categoryDatas.wrap.hide();
 				if (boardListDatas.alert.isShow()) boardListDatas.alert.hide();
 				boardListDatas.ul.reset();
-				data.list.forEach(function (boardData) {
-					boardListDatas.ul.addBoard(boardData);
-				})
+				boardListDatas.ul.addAll(data.list);
+
 			},
 		},
 		headerDatas: boardListDatas,
@@ -542,7 +543,7 @@ var BoardContentDOM = (function () {
 		},
 		ul: {
 			$obj: $("#commentListContainer"),
-			unshift: function (data) {
+			unshift: function(data) {
 				boardCmtDatas.count.plus();
 				
 				let $li = boardCmtDatas.li.get(data).hide();
@@ -550,34 +551,22 @@ var BoardContentDOM = (function () {
 				$li.slideDown();
 			},
 			shift: function(){
-				let callback = function(){
-					this.remove();
-				}
 				boardCmtDatas.count.minus();
-				this.$obj.find("li").eq(0).slideUp(400,callback);
+				this.$obj.find("li").eq(0).instance.remove();
 			},
-			add: function (data) {
-				let $li = boardCmtDatas.li.get(data);
-				this.$obj.append($li);
+			add: function(bean) {
+				let comment = new listTemplet.CommentList();
+				comment.setBean(bean);
+				this.$obj.append(comment.domElement);
 			},
-			reset: function () {
+			reset: function() {
 				this.$obj.html("");
 			},
-			addAll: function (list) {
-				list.forEach(data => this.add(data));
+			addAll: function(beanList) {
+				beanList.forEach(bean => this.add(bean));
 
 			}
 		},
-		li: {
-			$obj: $("#commentWriteWrap .item_comment"),
-			get: function (data) {
-				return BlindListDOM.listDatas.comment.get(data);
-			},
-			isModifiable: function ($li) {
-				$li.find(".text_name").text == userManage.getUser().name;
-			}
-		}
-
 	}
 	var boardCmtWriteDatas = {
 		wrap: {
@@ -681,69 +670,203 @@ var BoardContentDOM = (function () {
 	return rtn;
 })();
 
-var BlindListDOM = (function () {
-	var listDatas = {
-		category: {
-			$obj: $("#blindList .item_category.cloneable"),
-			get: function (info, depth) {
-				let $obj = util.getClone(this.$obj);
 
-				$obj.data("category_id", info.category_id);
-				$obj.find(".text_title").text(info.category_name);
-				$obj.find(".text_boardcount").text(info.category_board_count);
-				$obj.find(".text_hitcount").text(info.category_hit);
-				$obj.find(".text_likecount").text(info.category_like);
-				$obj.find(".text_lastupdate").text(info.category_update_date);
-				$obj.data("id", info.category_id);
+var listTemplet = (function(){
+	let getChildClass = function(parent,constructor){
+		let child;
 
-				if (depth <= 0) $obj.find(".inner_depth").addClass("off");
-				$obj.find(".inner_depth").css("width", this.getLeftMargin(depth));
+		if(typeof constructor != "undefined"){
+			child = function(){ 
+				Object.apply(this,arguments); 
+				
+				return this;
+			};
+		} else {
+			child = constructor;
+		}
 
-				return $obj;
-			},
-			getLeftMargin: function (depth) {
+		child.prototype = Object.create(this,parent.prototype);
+		child.prototype.constructor = child;
+
+		return child;
+	}
+
+	let HTMLList = (function(){
+		let main = function( $dom ){
+			if(typeof dom == "undefined"){
+				this.$domElement = this.getNewDomElement();
+				this.domElement = this.$domElement[0];
+			} else {
+				this.domElement = dom;
+				this.$domElement = $(dom);
+			}
+			
+			this.initDOMElement();
+			this.initEvent();
+
+			return this;
+		};
+		
+		//abstract main.prototype.$cloneDOMElement = 
+		main.prototype.getNewDomElement = function(){
+			return this.$cloneDOMElement.clone().removeClass(".cloneable");
+		}
+		
+		main.prototype.initDOMElement = function(){
+			this.domElement.instance = this;
+
+			return this;
+		};
+		
+		main.prototype.initEvent = function(){
+
+			return this;
+		};
+		return main;
+	});
+	
+	
+	let CommentList = (function(){
+		let main = getChildClass(HTMLList);
+		main.prototype.$cloneDOMElement = $("#blindList .item_comment.cloneable");
+
+		let clickRemoveListener = function(){
+			let message = "이 덧글을 삭제합니다. <br /> 계속 진행하시겠어요?"
+			let successCallback = function(){
+				BoardData.load.remove( this.bean.reply_id );
+			}
+
+			etcDOM.confirmDatas.wrap.show();
+			etcDOM.confirmDatas.wrap.set(message, "삭제", successCallback);
+		};
+		
+		let clickModifyListener = function(){
+			
+		};
+		
+		main.prototype.setByBean = function( bean ){
+			let $obj = this.$domElement;
+			this.bean = bean;
+
+			$obj.find(".text_name").text(bean.reply_user_name);
+			$obj.find(".text_date").text(bean.reply_date);
+			$obj.find(".text_descript").text(bean.reply_content);
+
+			this.reloadIconList();
+
+			return this;
+		}
+
+		main.prototype.reloadIconList = function(){
+			let $removeIcon = this.$domElement.find(".area_icon_remove");
+			let $modifyIcon = this.$domElement.find(".area_icon_modify");
+
+			let commentUserName = this.bean.reply_user_name;
+			let userBean = userManage.getBean();
+			let hasRemovePermission = userBean && userBean.user_permission_remove;
+
+			let isRemoveable = hasRemovePermission || commentUserName == userBean.user_name;
+			let isModifiable = commentUserName == userBean.user_name;
+
+			if( isRemoveable ) $removeIcon.show();
+			 else $removeIcon.hide();
+			
+			if( isModifiable ) $modifyIcon.show();
+				else $modifyIcon.hide();
+
+			return this;
+		}
+		
+		main.prototype.initEvent = function( ){
+			let $obj = this.$domElement;
+
+			$obj.find(".area_icon_remove").click(clickRemoveListener);
+			$obj.find(".area_icon_modify").click(clickModifyListener);
+
+			return this;
+		}
+
+		main.prototype.remove = function(){
+			this.domElement.slideUp(function(){
+				this.remove();
+			});
+
+			return this;
+		}
+		
+		return main;
+	});
+	
+	let CategoryList = (function(){
+		let main = getChildClass(HTMLList);
+		main.prototype.$cloneDOMElement = $("#blindList .item_category.cloneable");
+
+		main.prototype.setByBean = function( bean ){
+			let $obj = this.$domElement;
+			this.bean = bean;
+
+			$obj.data("category_id", bean.category_id);
+			$obj.find(".text_title").text(bean.category_name);
+			$obj.find(".text_boardcount").text(bean.category_board_count);
+			$obj.find(".text_hitcount").text(bean.category_hit);
+			$obj.find(".text_likecount").text(bean.category_like);
+			$obj.find(".text_lastupdate").text(bean.category_update_date);
+			$obj.data("id", bean.category_id);
+
+			return this;
+		}
+
+		main.prototype.setDepth = function(depth){
+			// if(typeof this.bean == "undefined") throw new Error("categoryList.setByBean()로 빈을 먼저 정의해주세요.");
+			let $obj = this.$domElement;
+			let getLeftMargin = function (depth) {
 				return depth == 0 ? 0 : (depth + 1) * 5;
 			}
-		},
-		comment: {
-			$obj: $("#blindList .item_comment.cloneable"),
-			get: function (data) {
-				let $obj = util.getClone(this.$obj);
-				$obj.find(".text_name").text(data.reply_user_name);
-				$obj.find(".text_date").text(data.reply_date);
-				$obj.find(".text_descript").text(data.reply_content);
 
-				return $obj;
-			}
-		},
-		board: {
-			$obj: $("#blindList .item_board.cloneable"),
-			get: function (data) {
-				let $obj = util.getClone(this.$obj);
+			if (depth <= 0) $obj.find(".inner_depth").addClass("off");
+			$obj.find(".inner_depth").css("width", getLeftMargin(depth) );
 
-				$obj.data("board_id", data.board_id);
-				$obj.find(".text_title").text(data.board_title);
-				$obj.find(".text_hit").text(data.board_hit);
-				$obj.find(".text_like").text(data.board_like);
-				$obj.find(".text_date").text(data.board_date_create);
-				return $obj
-			}
+			return this;
 		}
 
-	}
+	});
 
-	var util = {
-		getClone: function ($obj) {
-			return $obj.clone().removeClass("cloneable");
+	let BoardList = (function(){
+		let clickListener = function (event) {
+			let boardID = $(this).data("board_id");
+			BoardData.load.boardContent(boardID);
+			BoardData.load.boardComment(boardID);
+		};
+
+		let main = getChildClass(HTMLList);
+		main.prototype.$cloneDOMElement = $("#blindList .item_board.cloneable");
+
+		main.prototype.setByBean = function( bean ){
+			let $obj = this.$domElement;
+			this.bean = bean;
+
+			$obj.data("board_id", bean.board_id);
+			$obj.find(".text_title").text(bean.board_title);
+			$obj.find(".text_hit").text(bean.board_hit);
+			$obj.find(".text_like").text(bean.board_like);
+			$obj.find(".text_date").text(bean.board_date_create);
+
+			return this;
 		}
-	}
+
+		main.prototype.initEvent = function(){
+			this.$domElement.click(clickListener);
+
+			return this;
+		};
+
+	});
+
 
 	return {
-		listDatas: listDatas,
-		init: function () {
-			EventController.defineAll(listDatas);
-
-		}
+		CommentList : CommentList,
+		CategoryList : CategoryList,
+		BoardList : BoardList,
 	}
 })();
 
@@ -765,10 +888,14 @@ var etcDOM = (function () {
 				dom.content.set(data.board_content);
 				dom.categorySelect.select( data.board_category_name );
 			},
-			reset: function () {
+			reset: function (){
 				let dom = boardWriteDatas;
 				dom.title.reset();
 				dom.content.reset();
+			},
+			destroy: function(){
+				this.reset();
+				this.hide();
 			},
 			getWriteData: function () {
 				var user = userManage.getUser();
@@ -790,6 +917,7 @@ var etcDOM = (function () {
 					board_id: BoardData.board.board_id,
 					user_pwd: user.pwd,
 					user_name: user.name,
+					category_id: dom.categorySelect.getID(),
 				};
 			},
 		},
@@ -821,29 +949,7 @@ var etcDOM = (function () {
 			init: function (category) {
 				this.isInit = true;
 				const dom = boardWriteDatas;
-				const $option = dom.categoryOption.get(category.info);
-
-				this.addOption($option);
-
-				// 자식요소 재귀로 추가
-				if (category.child && category.child.length != 0) {
-					category.child.forEach(child => this.init(child));
-				}
-
-
-			},
-			addOption: function ($obj) {
-				this.$obj.append($obj);
-			},
-			setThisCategory: function () {
-				this.$obj.find("oprtion").each(function () {
-				})
-			},
-			select : function( categoryName ){
-				this.$obj.val(categoryName).attr("selected","selected");
-			},
-		},
-		categoryOption: {
+				const $option = dom.categoryOption.get(category.bean
 			$obj: $("#boardWriteWrap .board_category option"),
 			get: function (info) {
 				let $option = $("<option></option>");

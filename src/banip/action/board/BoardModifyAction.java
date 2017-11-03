@@ -35,6 +35,7 @@ public class BoardModifyAction extends ActionBoard{
 		array.add("board_id");
 		array.add("user_pwd");
 		array.add("user_name");
+		array.add("category_id");
 		return array;
 	}
 
@@ -61,17 +62,27 @@ public class BoardModifyAction extends ActionBoard{
 		BoardJSON boardJSON = new BoardJSON();
 		BoardDao boardDao = new BoardDao();
 		BoardBean bean = getModifyBean(request);
-		
-		boolean isSuccess = boardDao.modifyBoard(bean);
+		User user = super.getUser(request);
+		BoardBean responseBean = boardDao.modifyBoard(bean, user);
 		boardDao.close(true);
-		boardJSON.setStatus( isSuccess ? StatusCode.STATUS_SUCCESS : StatusCode.STATUS_SERVER);
-		return boardJSON;
+		
+		
+		return getBoardJSON(responseBean);
+	}
+
+
+	private BoardJSON getBoardJSON(BoardBean responseBean ) {
+		boolean isBeanNull = responseBean == null;
+		if(isBeanNull) return new BoardJSON(StatusCode.STATUS_SERVER,"게시글 수정에 실패했습니다.");
+		else return responseBean.getBoardJSON();
 	}
 	
 	private BoardBean getModifyBean(HttpServletRequest request) {
 		BoardBean bean = new BoardBean();
 		bean.setBOARD_CONTENT(super.getString(request, "board_content"));
 		bean.setBOARD_TITLE(super.getString(request, "board_title"));
+		bean.setBOARD_ID(super.getInt(request, "board_id"));
+		bean.setBOARD_CATEGORY_ID(super.getInt(request, "category_id"));
 		return bean;
 	}
 

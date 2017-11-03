@@ -23,22 +23,17 @@ public class UserAuthAction extends ActionUser {
 		return list;
 	}
 
+	
+	@Override
+	protected boolean checkAuth(HttpServletRequest request) {
+		// TODO Auto-generated method stub
+		return super.getUser(request).login();
+	}
+
 	@Override
 	protected BoardJSON executeMain(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		boolean isLoginSuccess = super.getUser(request).login();
-		return getResultJSON(isLoginSuccess);
+		return super.getUser(request).getBean().getBoardJSON();
 	}
-	
-	private BoardJSON getResultJSON( boolean isLoginSuccess) {
-		// TODO Auto-generated method stub
-		BoardJSON json = new BoardJSON();
-		json.putData("is_login_success", isLoginSuccess);
-		return json;
-	}
-
-	
-
-
 
 }
