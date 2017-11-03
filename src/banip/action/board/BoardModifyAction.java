@@ -35,7 +35,7 @@ public class BoardModifyAction extends ActionBoard{
 		array.add("board_id");
 		array.add("user_pwd");
 		array.add("user_name");
-		return null;
+		return array;
 	}
 
 	@Override

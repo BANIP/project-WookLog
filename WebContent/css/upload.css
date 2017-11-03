@@ -1,0 +1,42 @@
+@charset "UTF-8";
+:root{
+	--color-blue: #428bca;
+}
+#wrap{
+	padding:0px;
+	border:0px;
+	background:#fff;
+}
+#header{
+	border-bottom:5px solid var(--color-prime);
+	background:var(--color-back);
+    padding: 5px;
+    margin-bottom: 12px;
+}
+
+#header h2{
+	font-weight: 800;
+}
+
+#mainWrap{
+	background:#f0f0f0;
+    background: url(http://res.cloudinary.com/banipublic/image/upload/v1509277951/uploadBackground.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+#uploadSection{
+    margin: 0 auto;
+    height: 80%;
+    width: 80%;
+    color: black;
+    background: white;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.3);
+    padding: 5px;
+}
+
+#uploadHeader{
+	    border-bottom: 1px solid;
+		font-size: large;
+}
+

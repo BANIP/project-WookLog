@@ -56,92 +56,6 @@ var BoardException = (function () {
 	}
 })();
  
-var AjaxRequest = (function () {
-	/**
-	 * 값이 undefined인지 아닌지 확인
-	 * @param  {Object}  value 확인할 값
-	 * @return {Boolean}       undefined일시 true 반환
-	 */
-	var isNull = function (value) {
-		return typeof value == "undefined";
-	}
-
-	/**
-	 * 액션객체의 클래스명을 통신 가능한 url로 변경
-	 * @param  {String} name 액션 객체의 클래스명
-	 * @return {String}      ajax로 통신하기 위한 url
-	 */
-	var getActionURL = function (name) {
-		return name + ".do";
-	}
-
-	/**
-	 * 간단한 파라미터를 $.ajax와 호환이 가능한 파라미터로 변경
-	 * @param 파라미터를 변환할 객체, type, target, data 속성 필요
-	 */
-	var getAjaxParam = function (param) {
-		param.url = getActionURL(param.target);
-		if (isNull(param.dataType)) param.dataType = "json";
-		if (isNull(param.error)) param.error = BoardException.printError;
-		param.defaultSuccess = param.success;
-		param.success = function (json) {
-			if (json.statuscode != 0) {
-				param.error(json);
-			} else {
-				param.defaultSuccess(json);
-			}
-		}
-
-		return param;
-	}
-
-	/**
-	 * ajax통신 실행
-	 */
-	var execute = function (currentParam) {
-		let ajaxParam = getAjaxParam(currentParam);
-		$.ajax(ajaxParam);
-	}
-
-
-	return execute;
-})();
-
-var EventController = (function () {
-	var defaultEventList = ["click", "load"];
-	var isDefaultEvent = function (eventName) {
-		return defaultEventList.includes(eventName);
-	}
-
-	var initOnLoad = function (data) {
-		data.events.load();
-	}
-
-	var rtn = {
-		/**
-		 * 돔 데이터들의 이벤트를 정의함
-		 */
-		datasInit: function (datas) {
-			Object.keys(datas).forEach(dataName => {
-				let data = datas[dataName];
-				this.dataInit(data);
-			});
-		},
-		dataInit: function (data) {
-			let $obj = data.$obj;
-			if (typeof data.events == "undefined") return;
-			Object.keys(data.events).forEach(eventName => {
-				if (!isDefaultEvent(eventName)) return;
-				if (eventName == "load") initOnLoad(data);
-				let listener = data.events[eventName];
-				$obj.on(eventName, listener);
-			})
-		}
-	}
-
-	return rtn;
-})();
-
 var BoardData = (function () {
 	var defaultIndex = {
 		category: 1,
@@ -162,8 +76,9 @@ var BoardData = (function () {
 
 	var addUserParam = function (param) {
 		if (userManage.isLogined()) {
-			let userInfo = userManage.getUser();
-			param.data.user_name = userInfo.name;
+			let user = userManage.getUser();
+			param.data.user_name = user.name;
+			param.data.user_pwd = user.pwd;
 		}
 	}
 
@@ -215,7 +130,6 @@ var BoardData = (function () {
 				},
 				success: requestSuccess,
 			}
-			addUserParam(param);
 			AjaxRequest(param);
 		},
 		boardComment: function (boardID) {
@@ -231,7 +145,6 @@ var BoardData = (function () {
 				},
 				success: requestSuccess,
 			};
-			addUserParam(param);
 			AjaxRequest(param);
 		},
 		write : function(data){
@@ -241,9 +154,10 @@ var BoardData = (function () {
 				const boardID = json.data.board_id;
 				writedom.wrap.reset();
 				writedom.wrap.hide();
-				BoardException.print("작성 완료!");
+				BoardException.print("작성 완료!","check-circle-o");
 				load.boardContent(boardID);
 				load.boardComment(boardID);
+				load.boardList(data.category_id);
 			}
 
 			var requestError = function (json) {
@@ -260,6 +174,30 @@ var BoardData = (function () {
 			}
 
 			AjaxRequest(param);
+		},
+		commentwrite: function (data) {
+			let writedom = BoardContentDOM.boardCmtWriteDatas;
+			let listdom = BoardContentDOM.boardCmtDatas;
+			
+			userManage.simpleLogin(data.user_name, data.user_pwd);
+			let requestSuccess = function (json) {
+				writedom.content.reset();
+			}
+
+			let requestError = function(json){
+				listdom.ul.shift();
+				BoardException.printError(json);
+			}
+			
+			let param = {
+				type: "POST",
+				target: "ReplyAddAction",
+				data: data,
+				success: requestSuccess,
+				error:requestError,
+			}
+			AjaxRequest(param);
+
 		},
 		modify : function(data){
 			let writedom = etcDOM.boardWriteDatas;
@@ -294,8 +232,8 @@ var BoardData = (function () {
 				// 작성해야함
 			};
 			var param = {
-				type: "GET",
-				target: "ReplyListView",
+				type: "POST",
+				target: "BoardDeleteAction",
 				data: {
 					board_id: boardID,
 				},
@@ -509,8 +447,8 @@ var BoardListDOM = (function () {
 
 	var rtn = {
 		init: function () {
-			EventController.datasInit(headerDatas);
-			EventController.datasInit(boardListDatas);
+			EventController.defineAll(headerDatas);
+			EventController.defineAll(boardListDatas);
 		},
 		reload: {
 			category: function (data) {
@@ -597,14 +535,26 @@ var BoardContentDOM = (function () {
 			},
 			plus: function (count) {
 				this.$obj.text((i, value) => parseInt(value) + 1);
+			},
+			minus: function(count){
+				this.$obj.text((i, value) => parseInt(value) - 1);
 			}
 		},
 		ul: {
 			$obj: $("#commentListContainer"),
 			unshift: function (data) {
+				boardCmtDatas.count.plus();
+				
 				let $li = boardCmtDatas.li.get(data).hide();
 				this.$obj.prepend($li);
 				$li.slideDown();
+			},
+			shift: function(){
+				let callback = function(){
+					this.remove();
+				}
+				boardCmtDatas.count.minus();
+				this.$obj.find("li").eq(0).slideUp(400,callback);
 			},
 			add: function (data) {
 				let $li = boardCmtDatas.li.get(data);
@@ -679,46 +629,39 @@ var BoardContentDOM = (function () {
 		content: {
 			$obj: $("#commentWriteWrap .inp_descript"),
 			get: function () { return this.$obj.val() },
-			reset: function () { this.$obj.val("") }
+			reset: function () { this.$obj.val("") },
+			events : {
+				keydown : function(event){
+					let submitClickEvent = boardCmtWriteDatas.submit.events.click;
+					if(event.key == "Enter") submitClickEvent();
+				}
+			}
 		},
 		submit: {
 			$obj: $(".btn_submit"),
 			events: {
 				click: function () {
 					let dom = boardCmtWriteDatas;
+					let sendData = dom.wrap.getReplyDataSend();
+					let unshiftData = boardCmtWriteDatas.wrap.getReplyDataPrepend();
+
 					if (!dom.wrap.isFilledInput()) {
 						BoardException.print("덧글을 작성하기 위해 빈칸을 모두 써주세요.", "fa-pencil");
 						return false;
 					}
 
-					let data = dom.wrap.getReplyDataSend();
-					dom.submit.write(data);
+					boardCmtDatas.ul.unshift(unshiftData);
+					BoardData.load.commentwrite(sendData);
 				},
 			},
-			write: function (data) {
-				userManage.simpleLogin(data.user_name, data.user_pwd);
-				let requestSuccess = function (json) {
-					let unshiftData = boardCmtWriteDatas.wrap.getReplyDataPrepend();
-					boardCmtDatas.ul.unshift(unshiftData);
-					boardCmtWriteDatas.content.reset();
-				}
 
-				let param = {
-					type: "POST",
-					target: "ReplyAddAction",
-					data: data,
-					success: requestSuccess
-				}
-				AjaxRequest(param);
-
-			}
 		},
 	}
 	var rtn = {
 		init: function () {
-			EventController.datasInit(boardDatas);
-			EventController.datasInit(boardCmtDatas);
-			EventController.datasInit(boardCmtWriteDatas);
+			EventController.defineAll(boardDatas);
+			EventController.defineAll(boardCmtDatas);
+			EventController.defineAll(boardCmtWriteDatas);
 
 		},
 		reload: {
@@ -798,7 +741,7 @@ var BlindListDOM = (function () {
 	return {
 		listDatas: listDatas,
 		init: function () {
-			EventController.datasInit(listDatas);
+			EventController.defineAll(listDatas);
 
 		}
 	}
@@ -938,7 +881,7 @@ var etcDOM = (function () {
 				},
 				clickModify: function (event) {
 					let dom = boardWriteDatas;
-					let isModifiable = BoardData.board.board_user_name == userManage.getUser.name;
+					let isModifiable = BoardData.board.board_user_name == userManage.getUser().name;
 					if (!userManage.isLogined()) {
 						BoardException.print("로그인이 필요합니다.");
 						return;
@@ -1029,110 +972,12 @@ var etcDOM = (function () {
 
 	return {
 		init: function () {
-			EventController.datasInit(etcDatas);
-			EventController.datasInit(confirmDatas);
-			EventController.datasInit(boardWriteDatas);
+			EventController.defineAll(etcDatas);
+			EventController.defineAll(confirmDatas);
+			EventController.defineAll(boardWriteDatas);
 		},
 		etcDatas: etcDatas,
 		boardWriteDatas: boardWriteDatas,
 		confirmDatas: confirmDatas,
 	}
 })();
-
-var userManage = (function () {
-	let tempUser = {
-
-	}
-
-	var localLogin = function (name) {
-		var requestSuccess = function (json) {
-			Object.keys(json.data.info).forEach(function (attr) {
-				localStorage.setItem(attr, json.data.info[attr]);
-			})
-			localStorage.setItem("user_pwd", tempUser.pwd);
-		}
-		var param = {
-			type: "GET",
-			target: "UserGetUserAction",
-			data: {
-				user_name: name
-			},
-			success: requestSuccess
-		}
-		AjaxRequest(param)
-	}
-
-	var exception = {
-		loginFail: function () {
-			window.BoardException.print("로그인에 실패했습니다. 패스워드를 확인해주세요.");
-		},
-
-	}
-
-	return {
-		login: function (name, pwd) {
-			tempUser = { name: name, pwd: pwd };
-			var requestSuccess = function (json) {
-				if (json.data.is_login_success) {
-					localLogin(name);
-				} else {
-					exception.loginFail();
-				}
-			}
-			var param = {
-				type: "POST",
-				target: "UserAuthAction",
-				data: {
-					user_name: name,
-					user_pwd: pwd,
-				},
-				success: requestSuccess
-			};
-			AjaxRequest(param);
-		},
-		simpleLogin: function (name, pwd) {
-			if (!this.isLogined() || this.getUser().name != name || this.getUser().pwd != pwd) {
-				this.login(name, pwd);
-				return true;
-			}
-			return false;
-		},
-		isLogined: function () {
-			return localStorage.getItem("user_name") != null;
-		},
-		getUser: function () {
-			let info = {
-				name: localStorage.getItem("user_name"),
-				pwd: localStorage.getItem("user_pwd"),
-			};
-			return (info.name && info.pwd) ? info : false;
-		},
-		isWriteable: function () {
-			return localStorage.getItem("user_permission_write") === "true";
-		},
-		isRemoveable: function () {
-			return localStorage.getItem("user_permission_remove") === "true";
-		}
-	}
-})();
-
-var system = (function () {
-	var getDOMData = function () {
-		return Object.keys(window).filter(key => key.split("DOM")[1] == "");
-	}
-
-	var allDOMInit = function () {
-		getDOMData().forEach(key => window[key].init && window[key].init());
-	}
-	var rtn = {
-		init: function () {
-			allDOMInit();
-			BoardData.init(); 
-		}
-	}; 
-	return rtn
-})();
-
-system.init();
-
-   

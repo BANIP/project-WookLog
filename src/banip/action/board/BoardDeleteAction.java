@@ -57,7 +57,7 @@ public class BoardDeleteAction extends ActionBoard{
 		// TODO Auto-generated method stub
 
 		if(super.isBoardNull(request)) return new StatusCode(StatusCode.STATUS_UNDEFINED,"게시글이 존재하지 않습니다.");
-		if(isDeleteable(request)) return new StatusCode(StatusCode.STATUS_POWER,"게시글을 삭제할 권한이 없습니다.");
+		if(!isDeleteable(request)) return new StatusCode(StatusCode.STATUS_POWER,"게시글을 삭제할 권한이 없습니다.");
 		return new StatusCode(StatusCode.STATUS_SUCCESS);
 	}
 	
