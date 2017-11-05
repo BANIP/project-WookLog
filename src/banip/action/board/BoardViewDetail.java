@@ -37,7 +37,7 @@ public class BoardViewDetail extends ActionBoard{
 	private StatusCode getErrorResultStatus(boolean notExistBoard) {
 		// TODO Auto-generated method stub
 		if(notExistBoard) {
-			return super.getStatusCode(StatusCode.STATUS_UNDEFINED,"해당 게시글은 존재하지 않습니다.");
+			return super.getStatusCode(StatusCode.STATUS_UNDEFINED,"찾고자 하는 게시글이 존재하지 않아요.");
 		} else {
 			return super.getStatusCode(StatusCode.STATUS_SUCCESS);
 		}

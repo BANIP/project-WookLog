@@ -69,7 +69,8 @@ public class BoardDeleteAction extends ActionBoard{
 	private boolean isDeleteable(HttpServletRequest request) {
 		User user = super.getUser(request);
 		BoardID boardID = super.getBoardID(request);
-		return super.isBoardWriten(user,boardID) || !hasDeleteAuth(user) ? true : false;
+		
+		return super.isBoardWriten(user,boardID) || hasDeleteAuth(user);
 
 	}
 

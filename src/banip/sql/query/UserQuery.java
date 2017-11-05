@@ -64,8 +64,6 @@ public class UserQuery extends SQLQuery{
 
 		String query = "SELECT COUNT(*) FROM USER_VIEW_MAIN "
 			+ String.format("WHERE USER_NAME = '%s' AND USER_PWD = password('%s');", userName, userPWD);
-
-		System.out.println(query);
 		return query;
 	}
 	

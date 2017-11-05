@@ -1,4 +1,38 @@
 // 게시글, 덧글 처리중에 작성 한번 더 누를 시 예외뜨는 예외 처리
+var urlManager = (function(){
+	const SITENAME = "욱로그";
+	const FILENAME = "index.html"
+	let getURL = function(){
+		let fileName =location.pathname.replace(/^.*\//,"");
+		let queryString = [];
+		if(BoardData.category || false) queryString.push(`category=${ BoardData.category.info.category_id }`);
+		if(BoardData.board || false) queryString.push(`id=${ BoardData.board.board_id }`);
+		return `${ fileName }?${ queryString.join("&") }`;
+	}
+	
+	let getTitle = function(){
+		let boardTitle = BoardData.board.board_title;
+		return [SITENAME, boardTitle].join(" - ");
+	}
+	
+	return {
+		reloadURL : function(){
+			document.title = getTitle();
+			history.pushState(null,null,getURL());
+			
+		},
+		getCategoryID: function(){
+			const regex = /category\=([0-9]+)/;
+			const result = regex.exec(location.search);
+			return result && result[1];
+		},
+		getBoardID: function(){
+			const regex = /id\=([0-9]+)/;
+			const result = regex.exec(location.search);
+			return result && result[1];
+		}
+	}
+})();
 
 var BoardException = (function () {
 
@@ -32,6 +66,7 @@ var BoardException = (function () {
 	return {
 		boardList: function (json) {
 			if (BoardListDOM.categoryDatas.wrap.isOpen()) BoardListDOM.categoryDatas.wrap.hide();
+			BoardListDOM.boardListDatas.ul.reset();
 			BoardListDOM.boardListDatas.alert.show(`${json.status} (${json.statuscode})`);
 		},
 		print: function (message, faClass = "fa-times-circle-o") {
@@ -60,8 +95,8 @@ var BoardException = (function () {
  
 var BoardData = (function () {
 	var defaultIndex = {
-		category: 1,
-		board: 1,
+		category: urlManager.getCategoryID() || 1,
+		board:  urlManager.getBoardID() || 1,
 	}
 
 	var externalCtx;
@@ -81,10 +116,10 @@ var BoardData = (function () {
 			let param = new RequestParameter();
 			
 			let requestSuccess = function (json) {
-				console.log(json)
 				externalCtx.category = json.data;
 				setCategorysParent(json.data);
 				BoardListDOM.reload.category(json.data);
+				urlManager.reloadURL();
 			};
 
 			param.setType("GET")
@@ -118,7 +153,9 @@ var BoardData = (function () {
 
 			load.boardContent.requestSuccess = function (json) {
 				BoardData.board = json.data;
+				urlManager.reloadURL();
 				BoardContentDOM.reload.content(json.data);
+
 			};
 
 			param.setType("GET")
@@ -126,7 +163,7 @@ var BoardData = (function () {
 				 .addSuccessCallback(load.boardContent.requestSuccess)
 				 .getData().add("board_id",boardID);
 
-
+			BoardContentDOM.boardDatas.wrap.hide();
 			param.send(param);
 		},
 		boardComment: function (boardID) {
@@ -161,7 +198,7 @@ var BoardData = (function () {
 				BoardData.board = json.data;
 				BoardContentDOM.reload.content(json.data);
 				
-				load.boardList(json.data.board_category_id,1);
+				load.boardList(json.data.board_category_id,0);
 			}
 
 			var requestError = function (json) {
@@ -202,6 +239,7 @@ var BoardData = (function () {
 			param.send();
 		},
 		modify : function(data){
+			let param = new RequestParameter();
 			let writedom = etcDOM.boardWriteDatas;
 
 			var requestSuccess = function (json) {
@@ -212,7 +250,6 @@ var BoardData = (function () {
 				load.boardContent.requestSuccess(json);
 				load.boardComment(boardID);
 			}
-
 			var requestError = function (json) {
 				writedom.submit.setClickEvent("clickModify");
 				BoardException.printError(json);
@@ -250,8 +287,8 @@ var BoardData = (function () {
 			let param = new RequestParameter();
 			let requestSuccess = function (json) {
 				// 작성해야함
-				let categoryID = BoardData.category.bean.category_id;
-				load.boardList(categoryID, 1);
+				let categoryID = BoardData.category.info.category_id;
+				load.boardList(categoryID, 0);
 				load.boardContent(defaultIndex.board);
 			};
 
@@ -268,14 +305,13 @@ var BoardData = (function () {
 			let param = new RequestParameter();
 			let requestSuccess = function (json) {
 				// 작성해야함
-				BoardContentDOM.boardCmtDatas.li.remove($li);
 				BoardException.print("삭제 완료!");
 			};
 
 			param.setType("POST")
-				 .setTarget("BoardDeleteAction")
+				 .setTarget("ReplyDeleteAction")
 				 .addSuccessCallback(requestSuccess)
-				 .getData().add("reply_id",boardID).addUser();
+				 .getData().add("reply_id",reply_id).addUser();
 
 			param.send();
 
@@ -310,7 +346,7 @@ var BoardListDOM = (function () {
 		ul: {
 			$obj: $("#navContent"),
 			add: function (boardBean) {
-				var boardList = new listTemplet.BoardList();
+				let boardList = new listTemplet.BoardList();
 				boardList.setByBean(boardBean);
 
 
@@ -318,7 +354,7 @@ var BoardListDOM = (function () {
 			},
 			addAll: function(beanList){
 				beanList.forEach(function (boardBean) {
-					boardListDatas.ul.addBoard(boardBean);
+					boardListDatas.ul.add(boardBean);
 				})
 			},
 			reset: function () { this.$obj.html("") }
@@ -416,7 +452,7 @@ var BoardListDOM = (function () {
 			$obj: $("#navHeaderDefault .area_icon_search"),
 			events: {
 				click: function (event) {
-					headerDatas.searchWrap.$obj.show();
+					headerDatas.searchWrap.show();
 				}
 			}
 		},
@@ -450,8 +486,8 @@ var BoardListDOM = (function () {
 				let $ul = categoryDatas.ul.$obj;
 				let category = new listTemplet.CategoryList();
 
-				category.setBean( data.info ).get(data.info, depth);
-				$ul.append($obj);
+				category.setByBean( data.info ).setDepth(data.info, depth);
+				$ul.append(category.domElement);
 				
 				data.child.forEach(child => {
 					this.addCategory(child, depth + 1)
@@ -506,6 +542,8 @@ var BoardContentDOM = (function () {
 	var boardDatas = {
 		wrap: {
 			$obj: $("#contentContainer"),
+			hide: function(){ this.$obj },
+			show: function(){ this.$obj },
 			set: function (data) {
 				let $obj = this.$obj;
 				$obj.find(".text_hit").text(data.board_hit);
@@ -563,7 +601,7 @@ var BoardContentDOM = (function () {
 				this.$obj.text(count);
 			},
 			plus: function (count) {
-				this.$obj.text((i, value) => parseInt(value) + 1);
+				this.$obj.text((i, value) => parseInt(value || 0) + 1);
 			},
 			minus: function(count){
 				this.$obj.text((i, value) => parseInt(value) - 1);
@@ -571,12 +609,13 @@ var BoardContentDOM = (function () {
 		},
 		ul: {
 			$obj: $("#commentListContainer"),
-			unshift: function(data) {
+			unshift: function(dataParam) {
 				boardCmtDatas.count.plus();
 				
-				let $li = boardCmtDatas.li.get(data).hide();
-				this.$obj.prepend($li);
-				$li.slideDown();
+				let comment = new listTemplet.CommentList();
+				comment.setByBean( dataParam.get() );
+	
+				comment.addAndShow( this.$obj );
 			},
 			shift: function(){
 				boardCmtDatas.count.minus();
@@ -584,15 +623,14 @@ var BoardContentDOM = (function () {
 			},
 			add: function(bean) {
 				let comment = new listTemplet.CommentList();
-				comment.setBean(bean);
-				this.$obj.append(comment.domElement);
+				comment.setByBean(bean);
+				comment.addAndShow( this.$obj );
 			},
 			reset: function() {
 				this.$obj.html("");
 			},
 			addAll: function(beanList) {
 				beanList.forEach(bean => this.add(bean));
-
 			}
 		},
 	}
@@ -610,11 +648,12 @@ var BoardContentDOM = (function () {
 			},
 			getReplyDataPrepend: function () {
 				let dom = boardCmtWriteDatas;
-				return {
-					reply_content: dom.content.get(),
-					reply_date: new Date().toLocaleString(),
-					reply_user_name: dom.name.get(),
-				}
+				let dataParam = new ParameterData();
+				dataParam.add("reply_content", dom.content.get() )
+					.add("reply_date", new Date().toLocaleString() )
+					.add("reply_user_name", dom.name.get() );
+				
+				return dataParam;
 			},
 			isFilledInput: function () {
 				let dom = boardCmtWriteDatas;
@@ -683,6 +722,7 @@ var BoardContentDOM = (function () {
 		},
 		reload: {
 			content: function (data) {
+				BoardContentDOM.boardDatas.wrap.show();
 				boardDatas.wrap.set(data);
 			},
 			comment: function (data) {
@@ -698,35 +738,16 @@ var BoardContentDOM = (function () {
 	return rtn;
 })();
 
-
 var listTemplet = (function(){
-	let getChildClass = function(parent,constructor){
-		let child;
-
-		if(typeof constructor != "undefined"){
-			child = function(){ 
-				Object.apply(this,arguments); 
-				
-				return this;
-			};
-		} else {
-			child = constructor;
-		}
-
-		child.prototype = Object.create(this,parent.prototype);
-		child.prototype.constructor = child;
-
-		return child;
-	}
 
 	let HTMLList = (function(){
-		let main = function( $dom ){
-			if(typeof dom == "undefined"){
+		let HTMLList = function( $dom ){
+			if(typeof $dom == "undefined"){
 				this.$domElement = this.getNewDomElement();
 				this.domElement = this.$domElement[0];
 			} else {
-				this.domElement = dom;
-				this.$domElement = $(dom);
+				this.domElement = $dom[0];
+				this.$domElement = $dom;
 			}
 			
 			this.initDOMElement();
@@ -736,32 +757,44 @@ var listTemplet = (function(){
 		};
 		
 		//abstract main.prototype.$cloneDOMElement = 
-		main.prototype.getNewDomElement = function(){
-			return this.$cloneDOMElement.clone().removeClass(".cloneable");
+		HTMLList.prototype.getNewDomElement = function(){
+			return this.$cloneDOMElement.clone().removeClass("cloneable");
 		}
 		
-		main.prototype.initDOMElement = function(){
+		HTMLList.prototype.initDOMElement = function(){			
 			this.domElement.instance = this;
 
 			return this;
 		};
 		
-		main.prototype.initEvent = function(){
+		HTMLList.prototype.initEvent = function(){
 
 			return this;
 		};
-		return main;
-	});
-	
-	
+		return HTMLList;
+	})();
+		
 	let CommentList = (function(){
-		let main = getChildClass(HTMLList);
-		main.prototype.$cloneDOMElement = $("#blindList .item_comment.cloneable");
+		
+		let parent = HTMLList;
+		let CommentList = function(){ 
+			parent.apply(this,arguments); 
+			return this;
+		};
+		CommentList.prototype = Object.create(parent.prototype);
+		CommentList.prototype.constructor = CommentList;
+		
+		CommentList.prototype.$cloneDOMElement = $("#blindList .item_comment.cloneable");
 
-		let clickRemoveListener = function(){
+		let clickRemoveListener = function(event){
+			console.log(event);
+			let instance = $(event.currentTarget).closest(".item_comment")[0].instance;
+			let bean = instance.bean;
+			
 			let message = "이 덧글을 삭제합니다. <br /> 계속 진행하시겠어요?"
 			let successCallback = function(){
-				BoardData.load.remove( this.bean.reply_id );
+				instance.remove();
+				BoardData.load.removeComment( bean.reply_id );
 			}
 
 			etcDOM.confirmDatas.wrap.show();
@@ -772,7 +805,7 @@ var listTemplet = (function(){
 			
 		};
 		
-		main.prototype.setByBean = function( bean ){
+		CommentList.prototype.setByBean = function( bean ){
 			let $obj = this.$domElement;
 			this.bean = bean;
 
@@ -785,7 +818,7 @@ var listTemplet = (function(){
 			return this;
 		}
 
-		main.prototype.reloadIconList = function(){
+		CommentList.prototype.reloadIconList = function(){
 			let $removeIcon = this.$domElement.find(".area_icon_remove");
 			let $modifyIcon = this.$domElement.find(".area_icon_modify");
 
@@ -805,7 +838,7 @@ var listTemplet = (function(){
 			return this;
 		}
 		
-		main.prototype.initEvent = function( ){
+		CommentList.prototype.initEvent = function( ){
 			let $obj = this.$domElement;
 
 			$obj.find(".area_icon_remove").click(clickRemoveListener);
@@ -814,27 +847,45 @@ var listTemplet = (function(){
 			return this;
 		}
 
-		main.prototype.remove = function(){
-			this.domElement.slideUp(function(){
+		CommentList.prototype.remove = function(){
+			this.$domElement.slideUp(function(){
 				this.remove();
 			});
 
 			return this;
 		}
 		
-		return main;
-	});
+		CommentList.prototype.addAndShow = function($ul){
+			this.$domElement.hide();
+			$ul.append( this.$domElement );
+			this.$domElement.slideDown();
+
+			return this;
+		}
+		
+		return CommentList;
+	})();
 	
 	let CategoryList = (function(){
+		
 		let clickEventListener = function(event){
-			let categoryID = event.target.bean.category_id;
-			BoardData.load.boardList( categoryID , 1);
+
+			let bean = event.currentTarget.instance.bean;
+			let categoryID = bean.category_id;
+			BoardData.load.boardList( categoryID , 0);
 		};
 
-		let main = getChildClass(HTMLList);
-		main.prototype.$cloneDOMElement = $("#blindList .item_category.cloneable");
+		let parent = HTMLList;
+		let CategoryList = function(){ 
+			parent.apply(this,arguments); 
+			return this;
+		};
+		CategoryList.prototype = Object.create(parent.prototype);
+		CategoryList.prototype.constructor = CategoryList;
+		
+		CategoryList.prototype.$cloneDOMElement = $("#blindList .item_category.cloneable");
 
-		main.prototype.setByBean = function( bean ){
+		CategoryList.prototype.setByBean = function( bean ){
 			let $obj = this.$domElement;
 			this.bean = bean;
 
@@ -849,11 +900,11 @@ var listTemplet = (function(){
 			return this;
 		}
 
-		main.prototype.initEvent = function(){
+		CategoryList.prototype.initEvent = function(){
 			this.$domElement.click( clickEventListener );
 		}
 
-		main.prototype.setDepth = function(depth){
+		CategoryList.prototype.setDepth = function(depth){
 			// if(typeof this.bean == "undefined") throw new Error("categoryList.setByBean()로 빈을 먼저 정의해주세요.");
 			let $obj = this.$domElement;
 			let getLeftMargin = function (depth) {
@@ -866,7 +917,8 @@ var listTemplet = (function(){
 			return this;
 		}
 
-	});
+		return CategoryList;
+	})();
 
 	let BoardList = (function(){
 		let clickListener = function (event) {
@@ -875,15 +927,22 @@ var listTemplet = (function(){
 			BoardData.load.boardComment(boardID);
 		};
 
-		let main = getChildClass(HTMLList);
-		main.prototype.$cloneDOMElement = $("#blindList .item_board.cloneable");
+		let parent = HTMLList;
+		let BoardList = function(){ 
+			parent.apply(this,arguments); 
+			return this;
+		};
+		BoardList.prototype = Object.create(parent.prototype);
+		BoardList.prototype.constructor = BoardList;
+		BoardList.prototype.$cloneDOMElement = $("#blindList .item_board.cloneable");
 
-		main.prototype.setByBean = function( bean ){
+		BoardList.prototype.setByBean = function( bean ){
 			let $obj = this.$domElement;
 			this.bean = bean;
 
 			$obj.data("board_id", bean.board_id);
 			$obj.find(".text_title").text(bean.board_title);
+			$obj.find(".text_comment").text(`[${bean.board_reply_count}]`);
 			$obj.find(".text_hit").text(bean.board_hit);
 			$obj.find(".text_like").text(bean.board_like);
 			$obj.find(".text_date").text(bean.board_date_create);
@@ -891,14 +950,14 @@ var listTemplet = (function(){
 			return this;
 		}
 
-		main.prototype.initEvent = function(){
+		BoardList.prototype.initEvent = function(){
 			this.$domElement.click(clickListener);
 
 			return this;
 		};
 
-	});
-
+		return BoardList;
+	})();
 
 	return {
 		CommentList : CommentList,
@@ -913,10 +972,12 @@ var etcDOM = (function () {
 			$obj: $("#boardWriteWrap"),
 			show: function () {
 				etcDatas.fadeIn.show();
+				this.keydown.bind();
 				this.$obj.slideDown();
 			},
 			hide: function () {
 				etcDatas.fadeIn.hide();
+				this.keydown.unbind();
 				this.$obj.slideUp();
 			},
 			set: function(data){
@@ -957,6 +1018,18 @@ var etcDOM = (function () {
 					category_id: dom.categorySelect.getID(),
 				};
 			},
+			keydown:{
+				listener: function(event){
+					if(event.key == "Escape") boardWriteDatas.wrap.hide();
+					
+				},
+				bind: function(){ 
+					$("body").on("keydown",this.listener);
+				},
+				unbind: function(){
+					$("body").off("keydown",this.listener);
+				}
+			},
 		},
 		title: {
 			$obj: $("#boardWriteWrap .inp_title"),
@@ -996,17 +1069,20 @@ var etcDOM = (function () {
 	
 	
 				},
-				addOption: function ($obj) {
-					this.$obj.append($obj);
-				},
-				setThisCategory: function () {
-					this.$obj.find("oprtion").each(function () {
-					})
-				},
-				select : function( categoryName ){
-					this.$obj.val(categoryName).attr("selected","selected");
-				},
+			addOption: function ($obj) {
+				this.$obj.append($obj);
 			},
+			setThisCategory: function () {
+				let categoryName = BoardData.category.info.category_name;
+				this.select( categoryName );
+			},
+			select : function( categoryName ){
+				this.$obj.val(categoryName).attr("selected","selected");
+			},
+			getID : function(){
+				this.$obj.find(":selected").data("id");
+			}
+		},
 		categoryOption: {
 			$obj: $("#boardWriteWrap .board_category option"),
 			get: function (info) {
@@ -1115,6 +1191,7 @@ var etcDOM = (function () {
 			$obj: $("#confirmWrap .btn_cancel"),
 			events: {
 				click: function (event) {
+					confirmDatas.ok.clearEvent();
 					confirmDatas.wrap.hide();
 				}
 			}
@@ -1145,3 +1222,4 @@ var etcDOM = (function () {
 		confirmDatas: confirmDatas,
 	}
 })();
+

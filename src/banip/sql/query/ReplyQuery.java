@@ -120,7 +120,8 @@ public class ReplyQuery extends SQLQuery{
 	 */
 	public String getDeleteReplyQuery(int replyID){
 		String query = "DELETE FROM BOARD_REPLY "
-				+ String.format("WHERE REPLY REPLY_ID = %d",replyID);
+				+ String.format("WHERE REPLY_ID = %d",replyID);
+
 		return query;
 	}
 	

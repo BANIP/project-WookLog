@@ -20,6 +20,69 @@ import banip.data.StatusCode;
  *
  */
 public class BoardListView extends ActionBoard{
+	private class BoardListBulider {		Integer categoryID;
+		Integer offset;
+		Integer limit;
+		String regex;
+		
+		public BoardListBulider() {
+			regex = ".*";
+		}
+		
+		public BoardListBulider setCategoryID(Integer categoryID) {
+			this.categoryID = categoryID;
+			return this;
+		}
+		public BoardListBulider setOffset(Integer offset) {
+			this.offset = offset;
+			return this;
+		}
+		public BoardListBulider setLimit(Integer limit) {
+			this.limit = limit;
+			return this;
+		}
+		
+		public BoardListBulider setRegex(String searchWord) {
+
+			if(searchWord == null || searchWord == "null") return this;
+			regex = searchWord.replace(" ", "|");
+			
+			return this;
+		}
+		
+		public BeanList build() {
+			
+			BoardDao dao = new BoardDao();
+			ArrayList<BoardBean> beanList = dao.getBoardList(categoryID, offset, limit, regex);
+			dao.close(true);
+			
+			return new BeanList( beanList );
+		}
+	}
+	private class BeanList{
+		ArrayList<BoardBean> beanList;
+		
+		public BeanList(ArrayList<BoardBean> beanList){
+			this.beanList = beanList;
+		}
+		
+		private Iterator<BoardBean> getIterator() {
+			return beanList.iterator();
+		}
+		
+		@SuppressWarnings("unchecked")
+		private JSONArray getListJSON( ) {
+			 Iterator<BoardBean> beanIter = this.getIterator();
+			JSONArray array = new JSONArray();
+			while(beanIter.hasNext()) {
+				BoardBean bean = beanIter.next(); 
+				JSONObject json = bean.getJSON(bean.getListIgnore());
+				array.add(json);
+			}
+			return array;
+		}
+	}
+	
 	@Override
 	protected ArrayList<String> getRequireParam() {
 		// TODO Auto-generated method stub
@@ -54,22 +117,26 @@ public class BoardListView extends ActionBoard{
 		if(isBoardIndexOverflow(request,boardCount)) return super.getStatusCode(StatusCode.STATUS_UNDEFINED,"인덱스의 마지막입니다.");
 		return super.getStatusCode(StatusCode.STATUS_SUCCESS);
 	}
+	
 	private int getCategoryID(HttpServletRequest request) {
 		// TODO Auto-generated method stub
 		return super.getInt(request, "category_id");
+	}
+
+	private int getBoardListOffset(HttpServletRequest request) {
+		// TODO Auto-generated method stub
+		return  super.getInt(request, "board_list_offset");
+	}
+	
+	private String getSearchWord(HttpServletRequest request) {
+		// TODO Auto-generated method stub
+		return  super.getString(request, "board_search_word");
 	}
 	
 	private boolean isBoardOffsetWrong(HttpServletRequest request) {
 		// TODO Auto-generated method stub
 		return getBoardListOffset(request) < 0;
 	}
-
-	
-	private int getBoardListOffset(HttpServletRequest request) {
-		// TODO Auto-generated method stub
-		return  super.getInt(request, "board_list_offset");
-	}
-
 	private boolean isBoardListNull(int boardCount) {
 		// TODO Auto-generated method stub
 		return boardCount == 0;
@@ -77,7 +144,8 @@ public class BoardListView extends ActionBoard{
 
 	private boolean isBoardIndexOverflow(HttpServletRequest request,int boardCount) {
 		// TODO Auto-generated method stub
-		return (getBoardListOffset(request) + 1) * LIMIT  > boardCount;
+
+		return getBoardListOffset(request) * LIMIT  > boardCount;
 	}
 
 	
@@ -92,31 +160,22 @@ public class BoardListView extends ActionBoard{
 
 	@Override
 	protected BoardJSON executeMain(HttpServletRequest request) {
-			int offset = getBoardListOffset(request);
-			BoardJSON boardJSON = new BoardJSON();
-			BoardDao dao = new BoardDao();
-			int categoryID = getCategoryID(request);
 
-			ArrayList<BoardBean> beans = dao.getBoardList(categoryID  , offset, LIMIT);
-			boardJSON.putData("list", getListJSON(beans.iterator()) );
-			dao.close(true);
+			BoardListBulider listBuilder = new BoardListBulider();
+			listBuilder.setCategoryID( getCategoryID(request) )
+						  .setOffset( getBoardListOffset(request) )
+						  .setLimit( LIMIT )
+						  .setRegex( getSearchWord(request) );
 			
-			return boardJSON;
+			BeanList beanList = listBuilder.build();
+
+			return getResultJSON(beanList);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private JSONArray getListJSON(Iterator<BoardBean> beanIter) {
-		JSONArray array = new JSONArray();
-		while(beanIter.hasNext()) {
-			BoardBean bean = beanIter.next(); 
-			JSONObject json = bean.getJSON(bean.getListIgnore());
-			array.add(json);
-		}
-		return array;
+	private BoardJSON getResultJSON(BeanList beanList) {
+		BoardJSON boardJSON = new BoardJSON();
+		boardJSON.putData("list", beanList.getListJSON() );
+		return boardJSON;
 	}
-
-
-
-
 
 }

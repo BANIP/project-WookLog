@@ -11,8 +11,10 @@ import banip.data.User;
 import banip.sql.BoardDao;
 import banip.sql.UserDao;
 
-class ReplyDeleteAction extends ActionReply {
-
+public class ReplyDeleteAction extends ActionReply {
+	@Override
+	protected String getProtocol() { return "POST"; }
+	
 	@Override
 	protected ArrayList<String> getRequireParam() {
 		// TODO Auto-generated method stub
@@ -48,8 +50,8 @@ class ReplyDeleteAction extends ActionReply {
 		int replyID = super.getInt(request,"reply_id");
 		User user = super.getUser(request);
 		if(super.isReplyNull(request)) return new StatusCode(StatusCode.STATUS_UNDEFINED,"삭제하고자 하는 덧글이 존재하지 않습니다.");
-		if(isAuthLack(user,replyID)) return new StatusCode(StatusCode.STATUS_POWER,"해당 글을 삭제할 권한이 충분하지 않습니다.");
-		return super.checkOtherError(request);
+		if(isAuthLack(user,replyID)) return new StatusCode(StatusCode.STATUS_POWER,"해당 덧글을 삭제할 권한이 충분하지 않습니다.");
+		return new StatusCode(StatusCode.STATUS_SUCCESS);
 	}
 
 	/**
@@ -60,16 +62,14 @@ class ReplyDeleteAction extends ActionReply {
 	 */
 	private boolean isAuthLack(User user,int replyID) {
 		// TODO Auto-generated method stub
-		return hasNotDeleteAuth(user.getName()) || super.isReplyWriten(replyID, user);
+		boolean isDeleteable = hasDeleteAuth(user) || super.isReplyWriten(replyID, user);
+		return !isDeleteable;
 	}
 	
 
-	private boolean hasNotDeleteAuth(String userName) {
+	private boolean hasDeleteAuth(User user) {
 		// TODO Auto-generated method stub
-		UserDao dao = new UserDao();
-		boolean hasRemovePerm = dao.getUserBean(userName, 0).isUSER_PERMISSION_REMOVE();
-		dao.close(true);
-		return !hasRemovePerm;
+		return user.getBean().isUSER_PERMISSION_REMOVE();
 	}
 
 	@Override
@@ -77,6 +77,7 @@ class ReplyDeleteAction extends ActionReply {
 		// TODO Auto-generated method stub
 		BoardDao dao = new BoardDao();
 		int replyID = super.getInt(request, "reply_id");
+		
 		boolean isSuccess = dao.removeReply(replyID);
 		dao.close(true);
 		return getResultJSON(isSuccess);
@@ -90,12 +91,6 @@ class ReplyDeleteAction extends ActionReply {
 			return new BoardJSON(StatusCode.STATUS_SERVER,"서버상의 문제로 덧글 삭제에 실패했습니다.");
 		}
 		
-	}
-
-	@Override
-	protected String getProtocol() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

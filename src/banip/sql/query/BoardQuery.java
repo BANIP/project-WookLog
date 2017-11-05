@@ -57,11 +57,12 @@ public class BoardQuery extends SQLQuery{
 	 * @param categoryID 조회하려는 게시글이 존재하는 카테고리의 id
 	 * @param start 반환되는 첫번째 게시글의 위치
 	 * @param limit 반환되는 게시글의 갯수
+	 * @param regex 
 	 * @return 쿼리
 	 */
-	public String getSelectListQuery(int categoryID,int offset, int limit){
-		String query = String.format("CALL board_view_get_child(%d,%d,%d)",categoryID,offset,limit);
-		
+	public String getSelectListQuery(int categoryID,int offset, int limit, String regex){
+
+		String query = String.format("CALL board_view_get_child(%d,%d,%d,'%s')",categoryID,offset,limit,regex);		
 		return query;
 	}
 
@@ -90,13 +91,13 @@ public class BoardQuery extends SQLQuery{
 		String boardTitle = bean.getBOARD_TITLE();
 		String boardContent = bean.getBOARD_CONTENT();
 		int boardCategoryID = bean.getBOARD_CATEGORY_ID();
-		String query = "";
-		query = String.format("CALL BOARD_DO_WRITE(%d, '%s', '%s', '%s', '%s')", 
+		String query = String.format("CALL BOARD_DO_WRITE(%d, '%s', '%s', '%s', '%s')", 
 				boardCategoryID, 
 				boardTitle,
 				boardContent,
 				user.getName(),
 				user.getPWD());
+	
 		return query;
 	}
 	

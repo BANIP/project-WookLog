@@ -265,7 +265,12 @@
 
 .item_board .text_title{
 	font-size:0.8em;
-	
+}
+
+.item_board .text_comment{
+    margin-left: 6px;
+    font-size: 0.6em;
+    vertical-align:baseline;
 }
 
 .item_board .item_inner_bottom{

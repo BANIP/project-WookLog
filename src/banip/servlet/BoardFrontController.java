@@ -55,6 +55,7 @@ public class BoardFrontController extends HttpServlet {
 			action = (Action) Class.forName(command).newInstance();
 		}  catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
+		
 			action = (Action) new IllegalAccessAction();
 		} catch (ClassNotFoundException | InstantiationException e) {
 			// TODO Auto-generated catch block

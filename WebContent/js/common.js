@@ -8,46 +8,61 @@ let debug = {
 		}
 }
  
-let parameterData = (function(){
-	let main = function(data){
+let ParameterData = (function(){
+	let ParameterData = function(data){
 		if(typeof data == "undefined") this.data = {};
 		  else this.data = data;
 	}
 
-	main.prototype.get = function(){ return this.data };
+	ParameterData.prototype.get = function(){ return this.data };
 	
-	main.prototype.set = function(data){
+	ParameterData.prototype.set = function(data){
 		this.data = data;
 		return this;
 	}
 
-	main.prototype.add = function(name, value){
+	ParameterData.prototype.add = function(name, value){
 		this.data[name] = value;
 		return this;
 	}
+	
+	ParameterData.prototype.addByValue = function(name, $dom){
+		this.data[name] = $dom.val();
+		return this;
+	}
+	
+	ParameterData.prototype.addByhtml = function(name, $dom){
+		this.data[name] = $dom.html();
+		return this;
+	}
 
-	main.prototype.addAll = function(dataList){
+	ParameterData.prototype.addBytext = function(name, $dom){
+		this.data[name] = $dom.text();
+		return this;
+	}
+	
+	ParameterData.prototype.addAll = function(dataList){
 		Object.assign( this.data, dataList );
 		return this;
 	}
 
-	main.prototype.addUser = function(){
+	ParameterData.prototype.addUser = function(){
 		if (userManage.isLogined()) {
 			let user = userManage.getUser();
-			param.data.user_name = user.name;
-			param.data.user_pwd = user.pwd;
+			this.data.user_name = user.name;
+			this.data.user_pwd = user.pwd;
 		}
 	}
 
 
-	return main;
+	return ParameterData;
 })();
 
 let RequestParameter = (function(){
 
 	let main = function(){
 		this.core = {};
-		this.core.data = new parameterData();
+		this.core.data = new ParameterData();
 		return this;
 	}
 

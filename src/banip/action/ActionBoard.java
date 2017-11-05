@@ -25,10 +25,10 @@ public abstract class ActionBoard extends Action {
 	 * board_id로 BoardID객체 획득
 	 */
 	protected BoardID getBoardID(HttpServletRequest request) {
-		if(getString(request, "board_id") == null) return new BoardIDNull();
 		int boardID = getInt(request, "board_id");
-		BoardID id = new BoardID(boardID);
-		return id;
+		if(boardID <= 0 ) return new BoardIDNull();
+
+		return new BoardID(boardID);
 	}
 
 
@@ -40,7 +40,8 @@ public abstract class ActionBoard extends Action {
 
 	protected boolean isBoardNull(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		return getBoardID(request).isNull();
+		BoardID boardID = getBoardID(request);
+		return boardID.isNull() || !boardID.isExist();
 	}
 
 	public boolean isBoardWriten(User user, BoardID boardID) {

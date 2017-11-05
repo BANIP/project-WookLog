@@ -18,7 +18,7 @@ public abstract class ActionReply extends ActionBoard {
 		BoardDao dao = new BoardDao();
 		ReplyBean bean = dao.getReplyBean(replyID);
 		dao.close(true);
-		return bean.getREPLY_USER_NAME() == user.getName();
+		return bean.getREPLY_USER_NAME().equals(user.getName());
 	}
 
 

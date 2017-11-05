@@ -53,12 +53,13 @@ public class BoardDao extends SQLDao{
 	 * @param categoryIndex 가져올 글의 카테고리
 	 * @param startIndex 가져올 글의 시작부분
 	 * @param limit 가져올 글의 최대한도
+	 * @param regex 
 	 * @return 보드빈의 리스트
 	 */
-	public ArrayList<BoardBean> getBoardList(int categoryID,int offset, int limit){
+	public ArrayList<BoardBean> getBoardList(int categoryID,int offset, int limit, String regex){
 		ArrayList<BoardBean> beanList = new ArrayList<BoardBean>();
 		BoardQuery queryList = (BoardQuery) new BoardBean().getQuery();
-		String query = queryList.getSelectListQuery(categoryID, offset, limit);
+		String query = queryList.getSelectListQuery(categoryID, offset, limit, regex);
 		try {
 			pstmt = conn.prepareStatement(query);
 			rs = pstmt.executeQuery();
@@ -301,10 +302,11 @@ public class BoardDao extends SQLDao{
 	 */
 	public boolean removeReply(int replyID){
 		String query = new ReplyQuery(null).getDeleteReplyQuery(replyID);
+
 		try{
 			pstmt = conn.prepareStatement(query);
 			int result = pstmt.executeUpdate();
-			if(result == 3) return true;
+			if(result == 1) return true;
 			return false;
 		} catch(SQLException ee){
 			printException(ee, query);
