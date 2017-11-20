@@ -6,7 +6,6 @@ var system = (function () {
 			BoardData.init(); 
 		},
 		upload : function(){
-			uploadClientDOM.init();
 		}
 	}
 	
@@ -31,9 +30,7 @@ var system = (function () {
 		getDOMData().forEach(key => window[key].init && window[key].init());
 	}
 
-
-	
-	var rtn = {
+	return {
 		init: function () {
 			let customFunction = getcustomInit();
 			
@@ -41,7 +38,6 @@ var system = (function () {
 			customFunction();
 		}
 	}; 
-	return rtn
 })();
 
 system.init();

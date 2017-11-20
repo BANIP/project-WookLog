@@ -3,10 +3,10 @@ package banip.action.board;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
-import banip.sql.BoardDao;
 import banip.action.ActionBoard;
 import banip.util.*;
 import banip.bean.BoardBean;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 import banip.data.User;
 

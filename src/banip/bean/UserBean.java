@@ -1,7 +1,7 @@
 package banip.bean;
 import java.sql.Timestamp;
 
-import banip.sql.query.UserQuery;
+import banip.dao.query.UserQuery;
 
 public class UserBean extends SQLBean{
 	protected int USER_ID;

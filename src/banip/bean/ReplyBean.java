@@ -2,7 +2,7 @@ package banip.bean;
 
 import java.sql.Timestamp;
 
-import banip.sql.query.ReplyQuery;
+import banip.dao.query.ReplyQuery;
 public class ReplyBean extends SQLBean{
 	protected int REPLY_ID;
 	protected int REPLY_BOARD_ID;

@@ -10,9 +10,9 @@ import java.util.Iterator;
 
 import org.json.simple.JSONObject;
 
+import banip.dao.query.SQLQuery;
 import banip.data.SQLField;
 import banip.data.StatusCode;
-import banip.sql.query.SQLQuery;
 import banip.util.BoardJSON;
 /**
  * 비지니스 로직을 보다 효율적으로 수행하기 위해

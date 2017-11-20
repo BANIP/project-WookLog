@@ -7,9 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.simple.*;
 
 import banip.util.*;
-import banip.sql.BoardDao;
 import banip.action.ActionReply;
 import banip.bean.ReplyBean;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 
 

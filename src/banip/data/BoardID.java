@@ -1,7 +1,7 @@
 package banip.data;
 
 import banip.bean.BoardBean;
-import banip.sql.BoardDao;
+import banip.dao.BoardDao;
 
 public class BoardID {
 	int id;

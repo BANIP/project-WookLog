@@ -7,7 +7,20 @@ let debug = {
 			if(this.isdebug) console.log("receive : ",param);			
 		}
 }
- 
+
+let jqueryExtend = (function(){
+	$.fn.responsiveShow = function(){
+		$(this).removeClass("hide_responsive");
+		
+		return this;
+	}
+
+	$.fn.responsiveHide = function(){
+		$(this).addClass("hide_responsive");
+		
+		return this;
+	}
+})()
 let ParameterData = (function(){
 	let ParameterData = function(data){
 		if(typeof data == "undefined") this.data = {};
@@ -130,6 +143,10 @@ let RequestParameter = (function(){
 		return this.core.data;
 	}
 
+	main.prototype.setData = function(data){
+		return this.core.data = data;
+	}
+
 	/**
 	 * 액션객체의 클래스명을 통신 가능한 url로 변경
 	 * @param  {String} name 액션 객체의 클래스명
@@ -165,7 +182,7 @@ let RequestParameter = (function(){
 var EventController = (function () {
 
 	var isDefaultEvent = function (eventName) {
-		let defaultEventList = ["click", "load", "keydown"];
+		let defaultEventList = ["click", "load", "keydown","keypress"];
 		return defaultEventList.includes(eventName);
 	}
 
@@ -189,12 +206,12 @@ var EventController = (function () {
 	}
 	
 	let mergeMethod = {
-		merge : function(data, package ){
-			Object.assign(data, package.getAll(data) )
+		merge : function(data, pack ){
+			Object.assign(data, pack.getAll(data) )
 		},
 		mergeAll : function(data, packageList ){
-			packageList.forEach(function(package){
-				this.merge(data,package)
+			packageList.forEach(function(pack){
+				this.merge(data,pack)
 			})
 		}
 	}
@@ -349,30 +366,67 @@ let methodTemplet = (function(){
 	})();
 	return {
 		show:function(){
-			let package = new Package();
-			package.addAll({
+			let pack = new Package();
+			pack.addAll({
 				show: function(){ 
 					this.$obj.show(); 
 				},
 				hide: function(){ this.$obj.hide(); },				
 			});
-			return package;
+			return pack;
 		},
 		fade:function(){
-			let package = new Package();
-			package.addAll({
+			let pack = new Package();
+			pack.addAll({
 				show: function(){ this.$obj.fadeIn(); },
 				hide: function(){ this.$obj.fadeOut(); },				
 			});
-			return package;
+			return pack;
 		},
 		slide:function(){
-			let package = new Package();
-			package.addAll({
+			let pack = new Package();
+			pack.addAll({
 				show: function(){ this.$obj.slideDown(); },
 				hide: function(){ this.$obj.slideUp(); },				
 			});
-			return package;
+			return pack;
 		}
 	}
 })(); 
+
+/**
+ * li, tr과 같은 태그에 사용하기 위한 추상 클래스
+ */
+let HTMLList = (function(){
+	let HTMLList = function( $dom ){
+		if(typeof $dom == "undefined"){
+			this.$domElement = this.getNewDomElement();
+			this.domElement = this.$domElement[0];
+		} else {
+			this.domElement = $dom[0];
+			this.$domElement = $dom;
+		}
+		
+		this.initDOMElement();
+		this.initEvent();
+
+		return this;
+	};
+	
+	//abstract main.prototype.$cloneDOMElement = 
+	HTMLList.prototype.getNewDomElement = function(){
+		return this.$cloneDOMElement.clone().removeClass("cloneable");
+	}
+	
+	HTMLList.prototype.initDOMElement = function(){			
+		this.domElement.instance = this;
+
+		return this;
+	};
+	
+	HTMLList.prototype.initEvent = function(){
+
+		return this;
+	};
+	return HTMLList;
+})();

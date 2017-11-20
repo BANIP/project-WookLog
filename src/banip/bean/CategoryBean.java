@@ -2,7 +2,7 @@ package banip.bean;
 
 import java.sql.Timestamp;
 
-import banip.sql.query.CategoryQuery;
+import banip.dao.query.CategoryQuery;
 
 public class CategoryBean extends SQLBean{
 	protected int CATEGORY_ID;

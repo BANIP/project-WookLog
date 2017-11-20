@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
 import banip.action.ActionReply;
+import banip.dao.BoardDao;
+import banip.dao.UserDao;
 import banip.data.StatusCode;
 import banip.util.BoardJSON;
 import banip.data.User;
-import banip.sql.BoardDao;
-import banip.sql.UserDao;
 
 public class ReplyDeleteAction extends ActionReply {
 	@Override

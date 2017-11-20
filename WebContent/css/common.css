@@ -18,6 +18,25 @@
 
 }
 
+*::-webkit-scrollbar {
+    width: 0.2em;
+    background: var(--color-prime10);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-prime);
+  outline: var(--color-back);
+}
+
+.blind{
+	display:none!important;
+}
+
+.hide{
+	display:none;
+}
+
+
 body,  p,h1,h2,h3,h4,h5,h6, header, content, footer, aside, section  {
   padding:0px;
   margin:0px;
@@ -181,12 +200,16 @@ hr{
 	left:0%;
 	border:5px solid var(--color-prime5);
 	padding:5px;
+	overflow:hidden;
 }
 
 #header{
 	padding:3px;
 	width:100%;
-	border-bottom:black 1px solid;
+	border-bottom: 2px dashed var(--color-prime);
+    margin-bottom: -4px;
+    transform: translateY(-5px);
+    index:4;
 }
 #header h1{
 	text-align:center;
@@ -198,6 +221,7 @@ hr{
 	width:100%;
 	height:100%;
 	display:flex;
+	overflow-x:hidden;
 }
 
 #mainWrap > *{

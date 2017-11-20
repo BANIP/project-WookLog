@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import banip.sql.query.*;
+import banip.dao.query.*;
 
 public class BoardBean extends SQLBean{
 	

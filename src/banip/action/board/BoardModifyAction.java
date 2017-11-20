@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
 import banip.util.*;
-import banip.sql.BoardDao;
 import banip.action.ActionBoard;
 import banip.bean.BoardBean;
+import banip.dao.BoardDao;
 import banip.data.BoardID;
 import banip.data.StatusCode;
 import banip.data.User;
@@ -59,7 +59,6 @@ public class BoardModifyAction extends ActionBoard{
 	@Override
 	protected BoardJSON executeMain(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		BoardJSON boardJSON = new BoardJSON();
 		BoardDao boardDao = new BoardDao();
 		BoardBean bean = getModifyBean(request);
 		User user = super.getUser(request);

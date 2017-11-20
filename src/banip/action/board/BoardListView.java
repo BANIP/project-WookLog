@@ -1,16 +1,13 @@
 package banip.action.board;
 
-import java.util.Iterator;
 import java.util.ArrayList;
-
-
 import javax.servlet.http.HttpServletRequest;
-import org.json.simple.*;
 
-import banip.sql.BoardDao;
 import banip.util.*;
 import banip.action.ActionBoard;
 import banip.bean.BoardBean;
+import banip.bean.support.BeanList;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 
 /**
@@ -20,15 +17,12 @@ import banip.data.StatusCode;
  *
  */
 public class BoardListView extends ActionBoard{
-	private class BoardListBulider {		Integer categoryID;
+	private class BoardListBulider {		
+		Integer categoryID;
 		Integer offset;
 		Integer limit;
-		String regex;
-		
-		public BoardListBulider() {
-			regex = ".*";
-		}
-		
+		String regex = ".*";
+				
 		public BoardListBulider setCategoryID(Integer categoryID) {
 			this.categoryID = categoryID;
 			return this;
@@ -43,45 +37,25 @@ public class BoardListView extends ActionBoard{
 		}
 		
 		public BoardListBulider setRegex(String searchWord) {
+			System.out.println("searchWord =>" + searchWord );
 
-			if(searchWord == null || searchWord == "null") return this;
+			if(searchWord == null || searchWord.equals("null") ) return this;
+
 			regex = searchWord.replace(" ", "|");
 			
 			return this;
 		}
 		
-		public BeanList build() {
-			
+		public BeanList<BoardBean> build() {
+			System.out.println(regex);
 			BoardDao dao = new BoardDao();
-			ArrayList<BoardBean> beanList = dao.getBoardList(categoryID, offset, limit, regex);
+			BeanList<BoardBean> beanList = dao.getBoardList(categoryID, offset, limit, regex);
 			dao.close(true);
 			
-			return new BeanList( beanList );
+			return beanList;
 		}
 	}
-	private class BeanList{
-		ArrayList<BoardBean> beanList;
-		
-		public BeanList(ArrayList<BoardBean> beanList){
-			this.beanList = beanList;
-		}
-		
-		private Iterator<BoardBean> getIterator() {
-			return beanList.iterator();
-		}
-		
-		@SuppressWarnings("unchecked")
-		private JSONArray getListJSON( ) {
-			 Iterator<BoardBean> beanIter = this.getIterator();
-			JSONArray array = new JSONArray();
-			while(beanIter.hasNext()) {
-				BoardBean bean = beanIter.next(); 
-				JSONObject json = bean.getJSON(bean.getListIgnore());
-				array.add(json);
-			}
-			return array;
-		}
-	}
+
 	
 	@Override
 	protected ArrayList<String> getRequireParam() {
@@ -95,7 +69,7 @@ public class BoardListView extends ActionBoard{
 	/**
 	 * db에서 긁어올 글 갯수의 한도
 	 */
-	public final static int LIMIT = 10;
+	public final static int LIMIT = 30;
 
 	@Override
 	protected String getProtocol() {
@@ -167,15 +141,7 @@ public class BoardListView extends ActionBoard{
 						  .setLimit( LIMIT )
 						  .setRegex( getSearchWord(request) );
 			
-			BeanList beanList = listBuilder.build();
-
-			return getResultJSON(beanList);
+			BeanList<BoardBean> beanList = listBuilder.build();
+			return beanList.getBoardJSON();
 	}
-	
-	private BoardJSON getResultJSON(BeanList beanList) {
-		BoardJSON boardJSON = new BoardJSON();
-		boardJSON.putData("list", beanList.getListJSON() );
-		return boardJSON;
-	}
-
 }

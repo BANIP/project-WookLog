@@ -6,9 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import banip.util.BoardJSON;
 import banip.action.ActionLike;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 import banip.data.User;
-import banip.sql.BoardDao;
 
 public class BoardLikeView extends ActionLike {
 	/**

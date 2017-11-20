@@ -12,7 +12,9 @@
 	<link href="css/common.css" rel="stylesheet">
 	<link href="css/main-layout.css" rel="stylesheet">
 	<link href="css/main-outer.css" rel="stylesheet">
-</head>
+	<link href="css/main-content.css" rel="stylesheet">
+	<link href="css/main-responsive.css" rel="stylesheet">
+	</head>
 <body>
 	<div id="wrap">
 		<header id="header">
@@ -37,8 +39,8 @@
 							</div>
 						</div>
 					</div>
-					<div class="flow hide innercenter" id="navHeaderSearch">
-						<div class="innercenter wrap">
+					<div class="flow hide" id="navHeaderSearch">
+						<div class="innercenter module-search">
 							<div class="area_icon area_icon_spinner blind">
 								<i class="fa fa-spinner fa-spin icon_spinner"></i>
 							</div>
@@ -73,6 +75,9 @@
 				</article>
 			</nav>
 			<article id="contentWrap">
+				<button class="show_responsive" id="showListBtn">
+					<i class="fa fa-angle-left"></i>
+				</button>
 				<section id="contentContainer">
 					<header id="contentHeader">
 						<div class="right_icon_list">
@@ -190,6 +195,45 @@
 			</div>
 		</div>
 	</div>
+	<div class="fixedcenter" id="imageSearchWrap">
+		<div class="container innercenter">
+          <header class="area_header">
+              이미지 검색
+          </header>
+          <div class="area_search">
+						<div class="innercenter module-search">
+							<div class="area_icon area_icon_spinner blind">
+								<i class="fa fa-spinner fa-spin icon_spinner"></i>
+							</div>
+							<div class="area_icon area_icon_search">
+								<i class="fa fa-search icon_search"></i>
+							</div>
+							<div class="area_search">
+								<input class="inp_search inp" placeholder="검색어를 입력해주세요!" type="text">
+							</div>
+							<div class="area_icon area_icon_close">
+								<i class="fa fa-times-circle-o icon_close"></i>
+							</div>
+						</div>
+          </div>
+          <div class="area_result">
+              <ul class="area_tags">
+					<li> 태그리스트</li>
+					<li> 태그리스트</li>
+					<li> 태그리스트</li>
+					<li> 태그리스트</li>
+					<li> 태그리스트</li>
+              </ul>
+              <div class="area_thumbs">
+					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">
+					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">
+					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">
+					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">
+					<img src="C:\Users\rnaos\Desktop\1509247492.jpg">
+              </div>
+          </div>
+        </div>
+    </div>	
 	<div class="blind">
 		<ul id="blindList">
 			<li class="item_board cloneable">
@@ -261,16 +305,20 @@
 					<div class="item_inner_bottom area_descript">
 						<span class="text_descript"></span>
 					</div>
+					<div class="item_inner_bottom area_write hide">
+						<div class="container_wirte">
+							<input class="inp_descript inp"  placeholder="덧글 수정..."></input><button class="btn_submit"> 입력</button>
+						</div>
+					</div>
 				</div>
 			</li>
 		</ul>
 	</div>
-	<script src="js/jquery.min.js">
-	</script> 
-	<script src="js/common.js">
-	</script> 
-	<script src="js/main.js">
-	</script> 
+	<script src="js/jquery.min.js"></script> 
+	<script src="js/jquery-ui.min.js"></script> 
+	<script src="js/common.js"></script> 
+	<script src="js/main-support.js"></script> 
+	<script src="js/main.js"></script> 
 	<script src="js/init.js">
 	</script>
 </body>

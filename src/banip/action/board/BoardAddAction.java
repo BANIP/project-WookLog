@@ -3,10 +3,10 @@ package banip.action.board;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
-import banip.sql.BoardDao;
 import banip.action.ActionBoard;
 import banip.util.BoardJSON;
 import banip.bean.BoardBean;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 import banip.data.User;
 
@@ -41,6 +41,20 @@ public class BoardAddAction extends ActionBoard{
 		return array;
 	}
 	
+	
+	/**
+	 * 디코딩이 필요없는 파라미터 취득
+	 */
+	@Override
+	protected ArrayList<String> getExceptionDecode() {
+		// TODO Auto-generated method stub
+		ArrayList<String> list = new ArrayList<String>();
+		list.add("board_title");
+		list.add("board_content");
+		
+		return list;
+	}
+
 	/**
 	 * 아이디와 비밀번호가 올바른지 체크
 	 */
@@ -58,7 +72,7 @@ public class BoardAddAction extends ActionBoard{
 	@Override
 	protected StatusCode checkOtherError(HttpServletRequest request) {
 		// TODO Auto-generated method stub
-		if( cannotWriteable(request) ) return super.getStatusCode(StatusCode.STATUS_POWER,"게시글을 작성할 권한을 가지고 있지 않습니다.");
+		if( IscannotWriteable(request) ) return super.getStatusCode(StatusCode.STATUS_POWER,"게시글을 작성할 권한을 가지고 있지 않습니다.");
 		if( super.isCategoryNull(request) ) return super.getStatusCode(StatusCode.STATUS_UNDEFINED,"게시글을 등록하려는 카테고리가 존재하지 않습니다.");
 		if( isContentNull(request) ) return super.getStatusCode(StatusCode.STATUS_PARAM,"타이틀 혹은 내용이 빈칸입니다");
 		return  super.getStatusCode(StatusCode.STATUS_SUCCESS);
@@ -77,7 +91,7 @@ public class BoardAddAction extends ActionBoard{
 	 * @param bean
 	 * @return 권한 존재시 true 반환
 	 */
-	private boolean cannotWriteable(HttpServletRequest request) {
+	private boolean IscannotWriteable(HttpServletRequest request) {
 		return !super.getUserBean(request).isUSER_PERMISSION_WRITE();
 	}
 	

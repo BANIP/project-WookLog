@@ -1,7 +1,7 @@
 package banip.data;
 
 import banip.bean.UserBean;
-import banip.sql.UserDao;
+import banip.dao.UserDao;
 
 public class User {
 	protected String name;

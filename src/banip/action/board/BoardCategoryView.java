@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.*;
 
-import banip.sql.BoardDao;
 import banip.action.ActionBoard;
 import banip.util.*;
 import banip.bean.CategoryBean;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 
 public class BoardCategoryView extends ActionBoard{
@@ -65,7 +65,6 @@ public class BoardCategoryView extends ActionBoard{
 		return boardJSON;
 	}
 	
-	@SuppressWarnings({ "unchecked" })
 	private JSONObject getCategoryJSON(CategoryBean bean) {
 		return bean.getJSON();
 	}

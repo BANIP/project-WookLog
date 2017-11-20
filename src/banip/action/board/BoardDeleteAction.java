@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import banip.util.*;
 import banip.action.ActionBoard;
-import banip.sql.BoardDao;
+import banip.dao.BoardDao;
 import banip.data.BoardID;
 import banip.data.StatusCode;
 import banip.data.User;

@@ -6,9 +6,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import banip.data.StatusCode;
 import banip.util.BoardJSON;
-import banip.sql.BoardDao;
 import banip.action.ActionReply;
 import banip.bean.ReplyBean;
+import banip.dao.BoardDao;
 
 public class ReplyModifyAction extends ActionReply {
 
@@ -58,15 +58,15 @@ public class ReplyModifyAction extends ActionReply {
 	protected BoardJSON executeMain(HttpServletRequest request) {
 		// TODO Auto-generated method stub
 		BoardDao dao = new BoardDao();
-		boolean isSuccess = dao.modifyReply( getModifyReplyBean(request) );
+		ReplyBean bean = dao.modifyReply( getModifyReplyBean(request), super.getUser(request));
 		dao.close(true);
-		return getResultJSON(isSuccess);
+		return getResultJSON(bean);
 	}
 
-	private BoardJSON getResultJSON(boolean isSuccess) {
+	private BoardJSON getResultJSON(ReplyBean bean ) {
 		// TODO Auto-generated method stub
-		if(isSuccess) {
-			return new BoardJSON(StatusCode.STATUS_SUCCESS);
+		if(bean != null) {
+			return bean.getBoardJSON();
 		} else {
 			return new BoardJSON(StatusCode.STATUS_SERVER,"서버상의 오류로 덧글을 수정할 수 없습니다.");
 		}

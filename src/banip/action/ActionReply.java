@@ -3,8 +3,8 @@ package banip.action;
 import javax.servlet.http.HttpServletRequest;
 
 import banip.bean.ReplyBean;
+import banip.dao.BoardDao;
 import banip.data.User;
-import banip.sql.BoardDao;
 
 public abstract class ActionReply extends ActionBoard {
 

@@ -3,10 +3,10 @@ package banip.action;
 import javax.servlet.http.HttpServletRequest;
 
 import banip.bean.CategoryBean;
+import banip.dao.BoardDao;
 import banip.data.BoardID;
 import banip.data.BoardIDNull;
 import banip.data.User;
-import banip.sql.BoardDao;
 
 public abstract class ActionBoard extends Action {
 	/**

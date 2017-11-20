@@ -2,12 +2,11 @@ package banip.action.reply;
 
 import javax.servlet.http.HttpServletRequest;
 
-
-import banip.sql.BoardDao;
 import banip.action.ActionReply;
 import banip.util.BoardJSON;
 import banip.bean.ReplyBean;
 import banip.bean.ReplyWriteBean;
+import banip.dao.BoardDao;
 import banip.data.StatusCode;
 import banip.data.User;
 

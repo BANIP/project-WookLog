@@ -6,8 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import banip.action.ActionUser;
 import banip.bean.UserBean;
+import banip.dao.UserDao;
 import banip.data.StatusCode;
-import banip.sql.UserDao;
 import banip.util.BoardJSON;
 
 public class UserAddAction extends ActionUser{

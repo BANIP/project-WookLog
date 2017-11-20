@@ -5,7 +5,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.simple.*;
 
 import banip.util.BoardJSON;
@@ -55,7 +58,7 @@ public abstract class Action {
 			StatusCode status = new StatusCode(StatusCode.STATUS_PARAM);
 			return createJSON(null, request, status);
 		}
-
+		
 		//비즈니스로직을 실행할 권한을 가지고 있는지 체크
 		boolean isexcuteable = checkAuth(request);
 		if(!isexcuteable){
@@ -74,8 +77,7 @@ public abstract class Action {
 		return createJSON(boardJSON, request, getNullStausCode());
 	};
 	
-	
-	
+
 	protected StatusCode getNullStausCode() {
 		// TODO Auto-generated method stub
 		return new StatusCodeNull();
@@ -89,6 +91,16 @@ public abstract class Action {
 	 * @return 필수 파라미터들
 	 */
 	protected abstract ArrayList<String> getRequireParam();
+
+	/**
+	 * html decode의 예외 대상으로 지정할 파라미터들, 필요시 자식단에서 오버라이딩
+	 * @param request 
+	 * @return 디코드 하지 않을 파라미터의 이름 리스트
+	 */
+	protected ArrayList<String> getExceptionDecode() {
+		// TODO Auto-generated method stub
+		return new ArrayList<String>();
+	}
 
 	/**
 	 * 권한체크, 필요시 자식단에서 오버라이딩
@@ -144,7 +156,11 @@ public abstract class Action {
 	 * @return 얻어온 인자
 	 */
 	protected String getString(HttpServletRequest request,String name){
-		return  String.valueOf( request.getParameter(name) );
+		String value = String.valueOf( request.getParameter(name) );
+		boolean isNull = value == null;
+		boolean isDecodeRequire = !getExceptionDecode().contains(name);
+		if(!isNull && isDecodeRequire) value= StringEscapeUtils.unescapeHtml4(value);
+		return value;
 	}
 	
 	/**
@@ -155,7 +171,7 @@ public abstract class Action {
 	 * @return	정상적이면 true, null이 하나라도 존재할 시 false
 	 */
  	private boolean checkNullParameters(ArrayList<String> keys,HttpServletRequest request){
-		Iterator<String> keysIter = keys.iterator();
+ 		Iterator<String> keysIter = keys.iterator();
 		while( keysIter.hasNext()){
 			String key = keysIter.next();
 			if(request.getParameter(key) == null) return false;

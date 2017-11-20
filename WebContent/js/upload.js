@@ -1,7 +1,31 @@
-let request = (function(){
+let BoardException = (function(){
+	
+	return {
+		printError: function(json){
+			console.log("에러발생",json)
+		}
+	}
+})();
+
+let requestSend = (function(){
 	let load = {
-			uploadIamge : function(){
+			uploadIamge : function(dataParameter){
+				let requestSuccess = function(json){
+					alert("석섹스!!");
+					$("#uploadSection").append(JSON.stringify(json))
+				}
 				
+				let requestError = function(json){
+					$("#uploadSection").append(JSON.stringify(json));
+				}
+				
+				const param = new RequestParameter();
+				param.setType("POST")
+				 .setTarget("ImageAddAction")
+				 .addSuccessCallback(requestSuccess)
+				 .setData(dataParameter);
+
+				param.send(param);
 			}
 	}
 	
@@ -10,38 +34,107 @@ let request = (function(){
 	} 
 })();
 
-let uploadDOM = (function(){
+let listTemplet = (function(){
+	let UploadTR = (function(){
+		
+		let parent = HTMLList;
+		let UploadTR = function(){ 
+			parent.apply(this,arguments); 
+			return this;
+		};
+		
+		const getImage = function(url){
+			const image = new Image();
+			image.src = url;
+			return image;
+		}
+		
+		UploadTR.prototype = Object.create(parent.prototype);
+		UploadTR.prototype.constructor = UploadTR;
+		UploadTR.prototype.$cloneDOMElement = $(".table_result tr.cloneable.item_image");
+		
+		UploadTR.prototype.setByBean = function( bean ){
+			let $obj = this.$domElement;
+			this.bean = bean;
+			console.log(bean);
+			
+			
+			$obj.removeClass("hide");
+			$obj.find(".area_image").html( getImage(bean.thumbnail_url) );
+			
+			return this;
+		}
+		
+		UploadTR.prototype.getSendData = function(){
+			const $obj = this.$domElement;
+			return {
+				image_tags :  $obj.find(".inp_tag").val().split(/\s*\,\s*/),
+				image_title :  $obj.find(".inp_title").val(),
+				image_url :  this.bean.url,
+				image_thumb_url :  this.bean.thumbnail_url,
+			}
+		}
+
+		UploadTR.prototype.initEvent = function( ){
+
+		}
+		
+		return UploadTR;
+	})();
+	
+	return {
+		UploadTR : UploadTR
+	}
+	
+})();
+
+var uploadDOM = (function(){
 
 	let domDatas = {
 			loadwrap : {
 				$obj : $(".article_load"),
-				
+				hide: function(){ this.$obj.hide(); },
+				show: function(){ this.$obj.show(); },
 			},
 			loadupload : {
 				$obj : $(".article_upload"),				
-				hide: methodManage.get(this,"hide"),
-				show: methodManage.get(this,"show"),				
+				hide: function(){ this.$obj.hide(); },
+				show: function(){ this.$obj.show(); },		
 			},
 			table : {
-				$obj: $(".trable_result"),				
+				$obj: $(".table_result"),				
 				addAll: function(datas){
 					datas.forEach(v => this.add(v) );
 				},
 				add: function(data){
-					let $tr = domDatas.tr.get(data);
-					this.$obj.append($tr);
+					let tr = new listTemplet.UploadTR();
+					tr.setByBean(data);
+					this.$obj.append( tr.domElement );
+				},
+				getAllData: function(){
+					const parameter = new ParameterData();
+					parameter.addUser();
+					
+					const image_list = [];
+					this.$obj.find("item_image").not(".hide").each(function(){
+						let instance = this.instance;
+						image_list.push( instance.getSendData() );
+					})
+					parameter.add("image_list",JSON.stringify(image_list) );
+					return parameter;
 				}
 			},
-			tr : {
-				$clonable: $(".trable_result .blind.cloneable"),
-				get : function(){
-					let $tr = this.getClone();
-				},
-				getClone: function(){
-					return this.$cloneable.removeClass("blind").removeClass("cloneable");
+			submit:{
+				$obj:$(".btn_upload"),
+				events:{
+					click:function(event){
+						let datas = domDatas.table.getAllData();
+						requestSend.load.uploadIamge(datas);
+					}
 				}
-
 			}
+
+				
 			
 	}
 	
@@ -59,11 +152,11 @@ let uploadDOM = (function(){
 				
 			}
 		},
-		domDatas:domDatas
+		domDatas
 	}
 })();
 
-let uploadClientDOM = (function(){
+var uploadClientDOM = (function(){
 	let requestSuccess = function(error, result){
 	      console.log(error, result) 
 	      if(result.length > 0) uploadDOM.reload.uploadList(result);
