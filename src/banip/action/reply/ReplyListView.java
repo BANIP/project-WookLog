@@ -2,13 +2,12 @@ package banip.action.reply;
 
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
-import org.json.simple.*;
 
 import banip.util.*;
 import banip.action.ActionReply;
 import banip.bean.ReplyBean;
+import banip.bean.support.BeanList;
 import banip.dao.BoardDao;
 import banip.data.StatusCode;
 
@@ -51,37 +50,9 @@ public class ReplyListView extends ActionReply{
 		// TODO Auto-generated method stub
 		int boardID = super.getInt(request, "board_id");
 		BoardDao dao = new BoardDao();
-		ArrayList<ReplyBean> replyList = dao.getReplyList(boardID);
+		BeanList<ReplyBean> beanList = dao.getReplyList(boardID);
 		dao.close(true);
-		return getResultJSON(replyList.iterator());
+		return beanList.getBoardJSON();
 	}
 	
-	@SuppressWarnings("unchecked")
-	private BoardJSON getResultJSON(Iterator<ReplyBean> replyList) {
-		// TODO Auto-generated method stub
-		BoardJSON resultJSON = new BoardJSON();
-		JSONArray dataArray = new JSONArray();
-		while(replyList.hasNext()) {
-			ReplyBean bean = replyList.next();
-			dataArray.add( getReplyJSON(bean) );
-		}
-		resultJSON.putData("list", dataArray);
-		return resultJSON;
-	}
-	
-	private JSONObject getReplyJSON(ReplyBean bean) {
-		// TODO Auto-generated method stub
-		try {
-			return bean.getJSON();
-		} catch (Exception e) {
-			// TODO: handle exception
-		    e.printStackTrace();
-			return null;
-		}
-
-	}
-
-
-
-
 }

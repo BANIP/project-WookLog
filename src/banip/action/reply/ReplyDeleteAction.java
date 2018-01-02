@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import banip.action.ActionReply;
 import banip.dao.BoardDao;
-import banip.dao.UserDao;
 import banip.data.StatusCode;
 import banip.util.BoardJSON;
 import banip.data.User;

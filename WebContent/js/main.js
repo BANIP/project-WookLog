@@ -447,7 +447,7 @@ var BoardContentDOM = (function () {
 			}
 		},
 		submit: {
-			$obj: $(".btn_submit"),
+			$obj: $("#commentWriteWrap .btn_submit"),
 			events: {
 				click: function () {
 					let dom = boardCmtWriteDatas;
@@ -739,11 +739,74 @@ var etcDOM = (function () {
 		},
 	}
 
+	let ImageWindowDatas = {
+			wrap: {
+				$obj: $("#imageSearchWrap"),
+				hide:function(){
+					this.$obj.fadeOut();
+				},
+				show:function(){
+					this.$obj.fadeIn();
+				},
+				events:{
+					load: function(){
+						const doms = ImageWindowDatas;
+						const $obj = doms.wrap.$obj;
+						
+						new WriteObserver($obj).addWord(/\<img:(.+)\>/, function(matched){
+							doms.searchInput.set(matched[1]);
+							doms.searchIcon.$obj.trigger("click");
+						})
+						ImageWindowDatas.wrap.show();
+					}
+				}
+			},
+			searchInput:{
+				$obj: $("#imageSearchWrap .inp_search"),
+				get: function( ){
+					return this.$obj.val()
+				},
+				set: function(content){
+					return this.$obj.val(content)
+				},
+			},
+			searchIcon:{
+				$obj: $("#imageSearchWrap .icon_search"),
+				events:{
+					click:function(){
+						const doms = ImageWindowDatas;
+						searchWord = doms.searchInput.get();
+						BoardData.load.imageSearch( searchWord );
+					}
+				}
+			},
+			tags:{
+				$obj:$(".area_tags"),
+				reset:function(){
+					this.$obj.html();
+				},
+				add: function(){
+					//not implement
+				}
+			},
+			images:{
+				$obj:$(".area_thumbs"),
+				reset:function(){
+					this.$obj.html();
+				},
+				add: function(){
+					//not implement
+				}
+			},
+	}
+		
+		
 	return {
 		init: function () {
 			EventController.defineAll(etcDatas);
 			EventController.defineAll(confirmDatas);
 			EventController.defineAll(boardWriteDatas);
+			EventController.defineAll(ImageWindowDatas);
 		},
 		etcDatas: etcDatas,
 		boardWriteDatas: boardWriteDatas,

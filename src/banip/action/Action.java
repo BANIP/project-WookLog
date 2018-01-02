@@ -5,11 +5,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.json.simple.*;
 
 import banip.util.BoardJSON;
 import banip.bean.*;
@@ -35,6 +33,53 @@ import banip.data.UserNull;
  */
 public abstract class Action {
 	
+	public class createJSONBuilder{
+		public HttpServletRequest _request;
+		private BoardJSON _boardJSON;
+		private StatusCode _status;
+
+		public createJSONBuilder(HttpServletRequest request) {
+			_request = request;
+			// TODO Auto-generated constructor stub
+		}
+
+		public createJSONBuilder setBoardJSON(BoardJSON boardJSON) {
+			_boardJSON = boardJSON;
+			return this;
+		}
+		
+		public createJSONBuilder setStatusCode(StatusCode status) {
+			_status = status;
+			return this;
+		}
+				
+		public createJSONBuilder setStatusCode(int code) {
+			_status = new StatusCode(code);
+			return this;
+		}
+		
+		public createJSONBuilder setStatusCode(int code,String message) {
+			_status = new StatusCode(code,message);
+			return this;
+		}
+		
+		
+		/**
+		 * createJSON 실행
+		 * statusCode가 null일시 해당 인스턴스 생성
+		 * statusCode가 null이 아니고 boardjson도 null이 아니면 boardjson의 statuscode 지정
+		 * boardjson이 null이면 인스턴스 생성
+		 * @return
+		 */
+		public boolean execute() {
+			if(_status == null || _status.isNull()) _status = new StatusCode(StatusCode.STATUS_NULL);
+			else if(_boardJSON != null ) _boardJSON.setStatus(_status);
+			if(_boardJSON == null) _boardJSON = new BoardJSON(_status);
+			return createJSON(_boardJSON, _request);
+		}
+	}
+
+
 	/**
 	 * 프런트 컨트롤러에서 호출되는 메인 메서드
 	 * @param request 
@@ -44,37 +89,45 @@ public abstract class Action {
 	 * @throws ServletException 
 	 */
 	public boolean execute(HttpServletRequest request, HttpServletResponse response){
-		// TODO Auto-generated method stub
+		createJSONBuilder builder = new createJSONBuilder(request);
+		String nowProgress = "로직 시작";
 
-		//http프로토콜이 올바른지 체크
-		if(!isValidProtocol(request)) {
-			StatusCode status = new StatusCode(StatusCode.STATUS_PROTOCOL);
-			return createJSON(null, request, status);
+		try {
+			
+			//http프로토콜이 올바른지 체크
+			nowProgress = "프로토콜 통신 타입 체크";
+			if(!isValidProtocol(request)) return builder.setStatusCode(StatusCode.STATUS_PROTOCOL).execute();
+			
+			//필수 파라미터의 null체크
+			nowProgress = "파라미터 존재여부 검사";
+			boolean isNullError = !checkNullParameters( getRequireParam() ,request);
+			if(isNullError) return builder.setStatusCode(StatusCode.STATUS_PARAM).execute();
+	
+			//비즈니스로직을 실행할 권한을 가지고 있는지 체크
+			nowProgress = "권한 검사";
+			boolean isexcuteable = checkAuth(request);
+			if(!isexcuteable) return builder.setStatusCode(StatusCode.STATUS_CERTIFY).execute();
+	
+			// 다른 서버상의 오류가 있는지 체크
+			nowProgress = "파라미터 유효값 검사";
+			StatusCode isOtherError  = checkOtherError(request);
+			if(isOtherError.isError()) return builder.setStatusCode(isOtherError).execute();
+	
+			//로직 실행
+			nowProgress = "로직 실행";
+			BoardJSON boardJSON = executeMain(request);
+			return builder.setBoardJSON(boardJSON).execute();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			String errorMessage = getErrorMessage(nowProgress,"알 수 없는 오류",e);
+			return builder.setStatusCode(StatusCode.STATUS_SERVER, errorMessage).execute();
 		}
-		
-		//필수 파라미터의 null체크
-		boolean isNullError = !checkNullParameters( getRequireParam() ,request);
-		if(isNullError){
-			StatusCode status = new StatusCode(StatusCode.STATUS_PARAM);
-			return createJSON(null, request, status);
-		}
-		
-		//비즈니스로직을 실행할 권한을 가지고 있는지 체크
-		boolean isexcuteable = checkAuth(request);
-		if(!isexcuteable){
-			StatusCode status = new StatusCode(StatusCode.STATUS_CERTIFY);
-			return createJSON(null, request, status);
-		}
-		
-		// 다른 서버상의 오류가 있는지 체크
-		StatusCode otherErrorCode  = checkOtherError(request);
-		if(otherErrorCode.isError()){
-			return createJSON(null, request, otherErrorCode);
-		}
-		
-		//로직 실행
-		BoardJSON boardJSON = executeMain(request);
-		return createJSON(boardJSON, request, getNullStausCode());
+	}
+
+
+	private String getErrorMessage(String nowProgress,String errorType,Exception e) {
+		return String.format("%s중에 %s가 발생했습니다. (%s)", nowProgress,errorType,e.getMessage());
 	};
 	
 
@@ -179,14 +232,9 @@ public abstract class Action {
 		return true;
 	}
  	
-	protected boolean createJSON(BoardJSON boardjson,HttpServletRequest request,StatusCode status){
-		JSONObject json;
-		if(boardjson == null) boardjson = new BoardJSON();
-		if(!status.isNull()) boardjson.setStatus(status);
-		
-		json = boardjson.create();
-		request.setAttribute("boardJSON", json );
-		return (Integer) json.get("statuscode") == 0 ;
+	protected boolean createJSON(BoardJSON boardJSON,HttpServletRequest request){
+		request.setAttribute("boardJSON", boardJSON.create() );
+		return !boardJSON.getStatus().isError();
 	}
 	
 	/**

@@ -38,7 +38,7 @@ public class BoardJSON {
 		this.status = new StatusCode(statuscode,statusMessage);
 	}
 	
-	public StatusCode getStatus(StatusCode status){
+	public StatusCode getStatus(){
 		return status;
 	}
 	

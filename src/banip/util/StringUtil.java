@@ -3,7 +3,6 @@ package banip.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import banip.action.exception.NotActionURLAction;
 import banip.exception.IsNotActionURLException;
 
 public class StringUtil {

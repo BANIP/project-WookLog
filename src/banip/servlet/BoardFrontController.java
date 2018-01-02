@@ -25,14 +25,14 @@ import banip.util.StringUtil;
 @SuppressWarnings("unused")
 public class BoardFrontController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+    public static HttpServletRequest _request;
     public BoardFrontController() {
         super();
         // TODO Auto-generated constructor stub
     }
 
 	protected void doProcess(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+		_request = request;
 		String requestURI = request.getRequestURI();
 		Action action;
 		try {
@@ -68,7 +68,6 @@ public class BoardFrontController extends HttpServlet {
 	private void printJSON(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/board/queryJSON.servlet");
 		dispatcher.forward(request, response);
-
 	}
 
 	

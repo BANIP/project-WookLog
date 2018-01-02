@@ -47,7 +47,6 @@ public class BoardListView extends ActionBoard{
 		}
 		
 		public BeanList<BoardBean> build() {
-			System.out.println(regex);
 			BoardDao dao = new BoardDao();
 			BeanList<BoardBean> beanList = dao.getBoardList(categoryID, offset, limit, regex);
 			dao.close(true);

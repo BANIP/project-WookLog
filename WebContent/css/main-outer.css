@@ -222,4 +222,8 @@
         border:1px #ccc solid;
         margin-bottom:10px;        
     }
+    
+    #imageSearchWrap .area_footer{
+    	padding: 2px 5px
+    }
    

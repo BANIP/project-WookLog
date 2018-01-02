@@ -12,10 +12,9 @@ public abstract class ActionException extends Action {
 	@Override
 	public boolean execute(HttpServletRequest request, HttpServletResponse response){
 		// TODO Auto-generated method stub
-
 		//로직 실행
 		BoardJSON boardJSON = executeMain(request);
-		return createJSON(boardJSON, request, super.getNullStausCode());
+		return new createJSONBuilder(request).setBoardJSON(boardJSON).setStatusCode(super.getNullStausCode()).execute();
 	};
 	
 	@Override
